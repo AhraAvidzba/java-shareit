@@ -20,9 +20,12 @@ public class ItemController {
     }
 
     @PatchMapping("/{itemId}")
-    public ItemDto updateItem(@Valid @RequestBody ItemDto itemDto,
+    public ItemDto patchItem(@Valid @RequestBody ItemDto itemDto,
                               @PathVariable Long itemId,
                               @RequestHeader("X-Sharer-User-Id") Long userId) {
+        //обновлять только разрешенные и указанные в теле запроса поля (а не весь объект целиком как при post запросе),
+        //остальные поля оставлять неизменными (как были)
+        //возвращать объект целиком с обновленными полями
         return null;
     }
 
@@ -38,6 +41,7 @@ public class ItemController {
 
     @GetMapping("/items/search")
     public ItemDto searchItems(@RequestParam(name = "text") Long text) {
+        //выдавать только доступные для вааренды вещи
         return null;
     }
 }
