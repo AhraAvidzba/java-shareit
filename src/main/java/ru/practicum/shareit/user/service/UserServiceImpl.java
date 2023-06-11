@@ -17,32 +17,30 @@ public class UserServiceImpl implements UserService {
     private final UserDaoInMemoryImpl userDao;
 
     @Override
-    public List<UserDto> getAllUsers() {
-        return userDao.getAllUsers().stream()
-                .map(UserMapper::toUserDto)
-                .collect(Collectors.toList());
+    public List<User> getAllUsers() {
+        return userDao.getAllUsers();
     }
 
     @Override
-    public UserDto saveUser(User user) {
-        return UserMapper.toUserDto(userDao.saveUser(user));
+    public User saveUser(User user) {
+        return userDao.saveUser(user);
     }
 
     @Override
-    public UserDto updateUser(User user) {
+    public User updateUser(User user) {
         if (user.getId() == null || userDao.getUserById(user.getId()) == null) {
             throw new ContentNotFountException("Пользователь не найден");
         }
-        return UserMapper.toUserDto(userDao.updateUser(user));
+        return userDao.updateUser(user);
     }
 
     @Override
-    public UserDto getUserById(Long id) {
+    public User getUserById(Long id) {
         User user = userDao.getUserById(id);
         if (user == null) {
             throw new ContentNotFountException("Пользователя с id = " + id + " не существует");
         }
-        return UserMapper.toUserDto(user);
+        return user;
     }
 
 }
