@@ -21,8 +21,8 @@ public class ItemDto {
     private String name;
     @NotBlank
     private String description;
-    private boolean available;
     @NotNull
+    private Boolean available;
     private User owner;
     private ItemRequest request;
 }

@@ -1,15 +1,18 @@
 package ru.practicum.shareit.item.dao;
 
-import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.model.Item;
 
 import java.util.List;
 
 public interface ItemDao {
 
-    public Item saveItem(Item item, Long userId);
-    ItemDto patchItem(Item item, Long itemId, Long userId);
-    ItemDto getItemById(Long itemId);
-    List<ItemDto> getItemsOfUser(Long userId);
-    ItemDto searchItems(String text);
+    Item saveItem(Item item);
+
+    Item patchItem(Item item);
+
+    Item getItemById(Long itemId);
+
+    List<Item> getItemsOfUser(Long userId);
+
+    List<Item> searchItems(String text);
 }

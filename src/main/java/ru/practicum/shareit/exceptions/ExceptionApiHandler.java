@@ -24,6 +24,12 @@ public class ExceptionApiHandler {
         return Map.of("Конфликт: ", exception.getMessage());
     }
 
+    @ExceptionHandler(EditingNotAllowedException.class)
+    @ResponseStatus(HttpStatus.FORBIDDEN)
+    public Map<String, String> handleException(EditingNotAllowedException exception) {
+        return Map.of("Редактирование невозможно: ", exception.getMessage());
+    }
+
     @ExceptionHandler(NumberFormatException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public Map<String, String> handleException(NumberFormatException exception) {

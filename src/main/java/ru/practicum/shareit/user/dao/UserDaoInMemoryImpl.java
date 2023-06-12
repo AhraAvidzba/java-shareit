@@ -11,7 +11,7 @@ import java.util.Map;
 @Repository
 public class UserDaoInMemoryImpl implements UserDao {
     private final Map<Long, User> users = new HashMap<>();
-    private Long globalId = 0L;
+    private Long globalId = 1L;
 
     @Override
     public List<User> getAllUsers() {
@@ -32,7 +32,22 @@ public class UserDaoInMemoryImpl implements UserDao {
 
     @Override
     public User getUserById(Long id) {
-        return users.get(id);
+        User returnedUser = users.get(id);
+        return returnedUser == null ? null : returnedUser.toBuilder().build();
+    }
+
+    @Override
+    public User getUserByEmail(String email) {
+        User returnedUser = users.values().stream()
+                .filter(x -> x.getEmail().equals(email))
+                .findFirst()
+                .orElse(null);
+        return returnedUser == null ? null : returnedUser.toBuilder().build();
+    }
+
+    @Override
+    public void deleteUser(Long id) {
+        users.remove(id);
     }
 
     private Long generateId() {
