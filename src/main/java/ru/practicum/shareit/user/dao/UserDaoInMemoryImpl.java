@@ -27,7 +27,8 @@ public class UserDaoInMemoryImpl implements UserDao {
 
     @Override
     public User updateUser(User user) {
-        return users.put(user.getId(), user);
+        users.put(user.getId(), user);
+        return users.get(user.getId());
     }
 
     @Override

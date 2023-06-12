@@ -39,7 +39,7 @@ public class UserServiceImpl implements UserService {
         if (user.getId() == null || userDao.getUserById(user.getId()) == null) {
             throw new ContentNotFountException("Пользователь не найден");
         }
-        User t = userDao.updateUser(user);
+        //User t = userDao.updateUser(user);
         return userDao.updateUser(user);
     }
 

@@ -52,8 +52,6 @@ public class ItemController {
             item.setAvailable(itemDto.getAvailable());
         }
         Item newItem = itemService.patchItem(item);
-        System.out.println(item);
-        System.out.println(newItem);
         return ItemMapper.toItemDto(newItem);
     }
 
