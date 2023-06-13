@@ -1,7 +1,8 @@
-package ru.practicum.shareit.item.dao;
+package ru.practicum.shareit.item.impl;
 
 import org.springframework.stereotype.Repository;
-import ru.practicum.shareit.item.model.Item;
+import ru.practicum.shareit.item.Item;
+import ru.practicum.shareit.item.ItemRepository;
 
 import java.util.HashMap;
 import java.util.List;
@@ -10,7 +11,7 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Repository
-public class ItemDaoInMemoryImpl implements ItemDao {
+public class ItemRepositoryInMemoryImpl implements ItemRepository {
     private final Map<Long, Item> items = new HashMap<>();
     private Long globalId = 1L;
 

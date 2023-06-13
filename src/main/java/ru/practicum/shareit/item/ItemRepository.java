@@ -1,10 +1,8 @@
-package ru.practicum.shareit.item.dao;
-
-import ru.practicum.shareit.item.model.Item;
+package ru.practicum.shareit.item;
 
 import java.util.List;
 
-public interface ItemDao {
+public interface ItemRepository {
 
     Item saveItem(Item item);
 

@@ -1,10 +1,8 @@
-package ru.practicum.shareit.user.dao;
-
-import ru.practicum.shareit.user.model.User;
+package ru.practicum.shareit.user;
 
 import java.util.List;
 
-public interface UserDao {
+public interface UserRepository {
     List<User> getAllUsers();
 
     User saveUser(User user);
