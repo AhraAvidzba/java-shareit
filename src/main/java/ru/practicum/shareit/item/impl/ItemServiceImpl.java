@@ -37,6 +37,9 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public ItemDto patchItem(ItemDto itemDto, Long userId) {
+        if (itemDto.getId() == null) {
+            throw new ContentNotFountException("Необходимо указать id вещи");
+        }
         Item item = itemRepository.getItemById(itemDto.getId());
         if (item == null) {
             throw new ContentNotFountException("Вещь не найдена");

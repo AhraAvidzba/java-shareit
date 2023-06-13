@@ -38,6 +38,9 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserDto updateUser(UserDto userDto) {
+        if (userDto.getId() == null) {
+            throw new ContentNotFountException("Необходимо указать id пользователя");
+        }
         User user = userDao.getUserById(userDto.getId());
         if (user == null) {
             throw new ContentNotFountException("Пользователь не найден");

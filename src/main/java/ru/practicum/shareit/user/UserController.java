@@ -3,7 +3,6 @@ package ru.practicum.shareit.user;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
-import ru.practicum.shareit.exceptions.ContentNotFountException;
 import ru.practicum.shareit.user.dto.UserDto;
 
 import javax.validation.Valid;
@@ -38,9 +37,6 @@ public class UserController {
     @PatchMapping("/{userId}")
     public UserDto updateUser(@RequestBody UserDto userDto,
                               @PathVariable Long userId) {
-        if (userId == null) {
-            throw new ContentNotFountException("Необходимо указать id пользователя");
-        }
         userDto.setId(userId);
         UserDto savedUserDto = userService.updateUser(userDto);
         log.info("Обновлены поля у пользователя с id {}", savedUserDto.getId());
