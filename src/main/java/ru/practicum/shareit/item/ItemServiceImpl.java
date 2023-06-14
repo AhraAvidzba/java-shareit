@@ -1,12 +1,9 @@
-package ru.practicum.shareit.item.impl;
+package ru.practicum.shareit.item;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.exceptions.ContentNotFountException;
 import ru.practicum.shareit.exceptions.EditingNotAllowedException;
-import ru.practicum.shareit.item.Item;
-import ru.practicum.shareit.item.ItemRepository;
-import ru.practicum.shareit.item.ItemService;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.dto.ItemMapper;
 import ru.practicum.shareit.user.User;
