@@ -11,16 +11,17 @@ import javax.validation.Validation;
 import javax.validation.Validator;
 import javax.validation.ValidatorFactory;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
-    private final UserRepositoryInMemoryImpl userDao;
+    private final UserRepository userRepository;
 
     @Override
     public List<UserDto> getAllUsers() {
-        return userDao.getAllUsers().stream()
+        return userRepository.findAll().stream()
                 .map(UserMapper::toUserDto)
                 .collect(Collectors.toList());
     }
@@ -28,10 +29,11 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserDto saveUser(UserDto userDto) {
         User user = UserMapper.toUser(userDto);
-        if (userDao.getUserByEmail(user.getEmail()) != null) {
+        Optional<User> sameEmailUser = userRepository.getUserByEmail(user.getEmail());
+        if (sameEmailUser.isPresent()) {
             throw new ContentAlreadyExistException("Пользователь с таким email уже существует");
         }
-        return UserMapper.toUserDto(userDao.saveUser(user));
+        return UserMapper.toUserDto(userRepository.save(user));
     }
 
     @Override
@@ -39,10 +41,8 @@ public class UserServiceImpl implements UserService {
         if (userDto.getId() == null) {
             throw new ContentNotFountException("Необходимо указать id пользователя");
         }
-        User user = userDao.getUserById(userDto.getId());
-        if (user == null) {
-            throw new ContentNotFountException("Пользователь не найден");
-        }
+        User user = userRepository.findById(userDto.getId())
+                .orElseThrow(() -> new ContentNotFountException("Пользователь не найден"));
 
         if (userDto.getName() != null) {
             user.setName(userDto.getName());
@@ -51,8 +51,8 @@ public class UserServiceImpl implements UserService {
             user.setEmail(userDto.getEmail());
         }
 
-        User sameEmailUser = userDao.getUserByEmail(user.getEmail());
-        if (sameEmailUser != null && !sameEmailUser.getId().equals(user.getId())) {
+        Optional<User> sameEmailUser = userRepository.getUserByEmail(user.getEmail());
+        if (sameEmailUser.isPresent() && !sameEmailUser.get().getId().equals(user.getId())) {
             throw new ContentAlreadyExistException("Пользователь с таким email уже существует");
         }
 
@@ -60,24 +60,20 @@ public class UserServiceImpl implements UserService {
         ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
         Validator validator = factory.getValidator();
         validator.validate(user);
-        return UserMapper.toUserDto(userDao.updateUser(user));
+        return UserMapper.toUserDto(userRepository.save(user));
     }
 
     @Override
     public UserDto getUserById(Long id) {
-        User user = userDao.getUserById(id);
-        if (user == null) {
-            throw new ContentNotFountException("Пользователя с id = " + id + " не существует");
-        }
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new ContentNotFountException("Пользователя с id = " + id + " не существует"));
         return UserMapper.toUserDto(user);
     }
 
     @Override
     public void deleteUser(Long id) {
-        User user = userDao.getUserById(id);
-        if (user == null) {
-            throw new ContentNotFountException("Пользователя с id = " + id + " не существует");
-        }
-        userDao.deleteUser(id);
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new ContentNotFountException("Пользователя с id = " + id + " не существует"));
+        userRepository.deleteById(id);
     }
 }

@@ -7,8 +7,7 @@ import ru.practicum.shareit.exceptions.EditingNotAllowedException;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.dto.ItemMapper;
 import ru.practicum.shareit.user.User;
-import ru.practicum.shareit.user.UserService;
-import ru.practicum.shareit.user.dto.UserMapper;
+import ru.practicum.shareit.user.UserRepository;
 
 import javax.validation.Validation;
 import javax.validation.Validator;
@@ -21,14 +20,14 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class ItemServiceImpl implements ItemService {
     private final ItemRepository itemRepository;
-    private final UserService userService;
+    private final UserRepository userRepository;
 
     @Override
     public ItemDto saveItem(ItemDto itemDto, Long userId) {
-        Item item = ItemMapper.toItem(itemDto);
-        User owner = UserMapper.toUser(userService.getUserById(userId));
-        item.setOwner(owner);
-        Item savedItem = itemRepository.saveItem(item);
+        User owner = userRepository.findById(userId)
+                .orElseThrow(() -> new ContentNotFountException("Пользователь не найден"));
+        Item item = ItemMapper.toItem(itemDto, owner);
+        Item savedItem = itemRepository.save(item);
         return ItemMapper.toItemDto(savedItem);
     }
 
@@ -37,10 +36,8 @@ public class ItemServiceImpl implements ItemService {
         if (itemDto.getId() == null) {
             throw new ContentNotFountException("Необходимо указать id вещи");
         }
-        Item item = itemRepository.getItemById(itemDto.getId());
-        if (item == null) {
-            throw new ContentNotFountException("Вещь не найдена");
-        }
+        Item item = itemRepository.findById(itemDto.getId())
+                .orElseThrow(() -> new ContentNotFountException("Вещь не найдена"));
         if (!userId.equals(item.getOwner().getId())) {
             throw new EditingNotAllowedException("Вещь может редактировать только ее владелец");
         }
@@ -59,22 +56,21 @@ public class ItemServiceImpl implements ItemService {
         ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
         Validator validator = factory.getValidator();
         validator.validate(item);
-        return ItemMapper.toItemDto(itemRepository.patchItem(item));
+        return ItemMapper.toItemDto(itemRepository.save(item));
     }
 
     @Override
     public ItemDto getItemById(Long itemId) {
-        Item item = itemRepository.getItemById(itemId);
-        if (item == null) {
-            throw new ContentNotFountException("Вещи с id = " + itemId + " не существует");
-        }
+        Item item = itemRepository.findById(itemId)
+                .orElseThrow(() -> new ContentNotFountException("Вещи с id = " + itemId + " не существует"));
         return ItemMapper.toItemDto(item);
     }
 
     @Override
     public List<ItemDto> getItemsOfUser(Long userId) {
-        userService.getUserById(userId); //Проверка существования пользователя с таким id
-        return itemRepository.getItemsOfUser(userId).stream()
+        userRepository.findById(userId)
+                .orElseThrow(() -> new ContentNotFountException("Пользователь не найден"));
+        return itemRepository.findAllByOwnerId(userId).stream()
                 .map(ItemMapper::toItemDto)
                 .collect(Collectors.toList());
     }
@@ -84,7 +80,7 @@ public class ItemServiceImpl implements ItemService {
         if (text.isEmpty()) {
             return Collections.emptyList();
         }
-        return itemRepository.searchItems(text).stream()
+        return itemRepository.findAllByNameOrDescription(text).stream()
                 .map(ItemMapper::toItemDto)
                 .collect(Collectors.toList());
     }
