@@ -3,6 +3,7 @@ package ru.practicum.shareit.item;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
+import ru.practicum.shareit.request.ItemRequest;
 import ru.practicum.shareit.user.User;
 
 import javax.persistence.*;
@@ -36,7 +37,7 @@ public class Item {
     @NotNull
     private User owner;
 
-//    @OneToOne
-//    @JoinColumn(name="request_id")
-//    private ItemRequest request;
+    @OneToOne
+    @JoinColumn(name = "request_id")
+    private ItemRequest request;
 }
