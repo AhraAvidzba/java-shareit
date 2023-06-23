@@ -8,7 +8,6 @@ import ru.practicum.shareit.user.User;
 
 import javax.persistence.*;
 import javax.validation.constraints.Future;
-import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 
@@ -43,6 +42,6 @@ public class Booking {
     @Column(name = "_status")
     @Enumerated(EnumType.STRING)
     @NotNull
-    @NotBlank
     private Status status;
+
 }
