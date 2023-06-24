@@ -30,9 +30,10 @@ public class UserServiceImpl implements UserService {
     public UserDto saveUser(UserDto userDto) {
         User user = UserMapper.toUser(userDto);
         Optional<User> sameEmailUser = userRepository.getUserByEmail(user.getEmail());
-        if (sameEmailUser.isPresent()) {
-            throw new ContentAlreadyExistException("Пользователь с таким email уже существует");
-        }
+//        тесты postman требуют, чтоб валидация проверялась на уровне бд (для генерации id)
+//        if (sameEmailUser.isPresent()) {
+//            throw new ContentAlreadyExistException("Пользователь с таким email уже существует");
+//        }
         return UserMapper.toUserDto(userRepository.save(user));
     }
 

@@ -23,7 +23,7 @@ public class User {
     @NotBlank(message = "Необходимо указать имя пользователя")
     private String name;
 
-    @Column
+    @Column(unique = true)
     @NotNull
     @Email(message = "Невалидный email")
     private String email;

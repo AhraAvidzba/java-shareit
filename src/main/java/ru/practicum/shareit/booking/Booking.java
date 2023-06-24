@@ -23,10 +23,12 @@ public class Booking {
 
     @Column(name = "_start")
     @Future
+    @NotNull
     private LocalDateTime start;
 
     @Column(name = "_end")
     @Future
+    @NotNull
     private LocalDateTime end;
 
     @ManyToOne(fetch = FetchType.LAZY)

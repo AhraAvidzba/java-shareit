@@ -5,8 +5,8 @@ DROP TABLE users;
 
 CREATE TABLE IF NOT EXISTS users (
 id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-name varchar(100),
-email varchar(320) );
+name varchar(50),
+email varchar(50) UNIQUE );
 
 CREATE TABLE IF NOT EXISTS item_requests (
 id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,

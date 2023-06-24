@@ -27,13 +27,55 @@ public class ExceptionApiHandler {
     @ExceptionHandler(EditingNotAllowedException.class)
     @ResponseStatus(HttpStatus.FORBIDDEN)
     public Map<String, String> handleException(EditingNotAllowedException exception) {
-        return Map.of("Редактирование невозможно: ", exception.getMessage());
+        return Map.of("Операция невозможна: ", exception.getMessage());
+    }
+
+    @ExceptionHandler(AccessRestrictedException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public Map<String, String> handleException(AccessRestrictedException exception) {
+        return Map.of("Доступ невозможен: ", exception.getMessage());
+    }
+
+    @ExceptionHandler(UnavalableItemBookingException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public Map<String, String> handleException(UnavalableItemBookingException exception) {
+        return Map.of("Бронирование невозможно: ", exception.getMessage());
+    }
+
+    @ExceptionHandler(IncorrectBookingDateException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public Map<String, String> handleException(IncorrectBookingDateException exception) {
+        return Map.of("Бронирование невозможно: ", exception.getMessage());
+    }
+
+    @ExceptionHandler(BookingTimeCrossingException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public Map<String, String> handleException(BookingTimeCrossingException exception) {
+        return Map.of("Бронирование невозможно: ", exception.getMessage());
+    }
+
+    @ExceptionHandler(SameBookerAndOwnerException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public Map<String, String> handleException(SameBookerAndOwnerException exception) {
+        return Map.of("Бронирование невозможно: ", exception.getMessage());
     }
 
     @ExceptionHandler(NumberFormatException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public Map<String, String> handleException(NumberFormatException exception) {
         return Map.of("Неверный формат данных: ", exception.getMessage());
+    }
+
+    @ExceptionHandler(UnknownStateException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public Map<String, String> handleException(UnknownStateException exception) {
+        return Map.of("error", "Unknown state: " + exception.getMessage());
+    }
+
+    @ExceptionHandler(IsUpToDateException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public Map<String, String> handleException(IsUpToDateException exception) {
+        return Map.of("error", exception.getMessage());
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
@@ -47,4 +89,6 @@ public class ExceptionApiHandler {
         });
         return messages;
     }
+
+
 }
