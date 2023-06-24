@@ -130,7 +130,7 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     public List<BookingOutDto> findAllBookingsOfItem(Long itemId) {
-        return bookingRepository.findByItemId(itemId).stream()
+        return bookingRepository.findByItemId(itemId, Sort.by("start").descending()).stream()
                 .map(BookingMapper::mapToBookingOutDto)
                 .collect(Collectors.toList());
     }

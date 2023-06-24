@@ -29,6 +29,19 @@ public class BookingMapper {
         return bookingDto;
     }
 
+    public static BookingIdOutDto mapToBookingIdOutDto(Booking booking) {
+        BookingIdOutDto bookingDto = new BookingIdOutDto();
+        if (booking != null) {
+            bookingDto.setId(booking.getId());
+            bookingDto.setStart(booking.getStart());
+            bookingDto.setEnd(booking.getEnd());
+            bookingDto.setItemId(booking.getItem().getId());
+            bookingDto.setBookerId(booking.getBooker().getId());
+            bookingDto.setStatus(booking.getStatus());
+        }
+        return bookingDto;
+    }
+
     public static Booking mapToBooking(BookingInDto bookingDto, Item item, User owner) {
         Booking booking = new Booking();
         booking.setId(bookingDto.getId());

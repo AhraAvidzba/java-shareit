@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.item.dto.ItemDto;
+import ru.practicum.shareit.item.dto.ItemIdDto;
 
 import javax.validation.Valid;
 import java.util.List;
@@ -34,7 +35,7 @@ public class ItemController {
     }
 
     @GetMapping("/{itemId}")
-    public ItemDto getItemById(@PathVariable Long itemId) {
+    public ItemIdDto getItemById(@PathVariable Long itemId) {
         log.info("Возвращена вещь с id = {}", itemId);
         return itemService.getItemById(itemId);
     }
