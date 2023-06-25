@@ -66,6 +66,12 @@ public class ExceptionApiHandler {
         return Map.of("Неверный формат данных: ", exception.getMessage());
     }
 
+    @ExceptionHandler(UserDontHaveBookingException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public Map<String, String> handleException(UserDontHaveBookingException exception) {
+        return Map.of("Неверный запрос: ", exception.getMessage());
+    }
+
     @ExceptionHandler(UnknownStateException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public Map<String, String> handleException(UnknownStateException exception) {

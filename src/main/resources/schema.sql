@@ -1,7 +1,8 @@
-DROP TABLE booking;
-DROP TABLE items;
-DROP TABLE item_requests;
-DROP TABLE users;
+DROP TABLE IF EXISTS bookings CASCADE;
+DROP TABLE IF EXISTS items CASCADE;
+DROP TABLE IF EXISTS item_requests CASCADE;
+DROP TABLE IF EXISTS comments CASCADE;
+DROP TABLE IF EXISTS users CASCADE;
 
 CREATE TABLE IF NOT EXISTS users (
 id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
@@ -25,7 +26,7 @@ request_id BIGINT,
 CONSTRAINT fk_items_to_users FOREIGN KEY(user_id) REFERENCES users(id),
 CONSTRAINT fk_items_to_request FOREIGN KEY(request_id) REFERENCES item_requests(id) );
 
-CREATE TABLE IF NOT EXISTS booking (
+CREATE TABLE IF NOT EXISTS bookings (
 id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
 _start timestamp,
 _end timestamp,
@@ -35,3 +36,11 @@ _status varchar,
 CONSTRAINT fk_booking_to_item FOREIGN KEY(item_id) REFERENCES items(id),
 CONSTRAINT fk_booking_to_user FOREIGN KEY(user_id) REFERENCES users(id) );
 
+CREATE TABLE IF NOT EXISTS comments (
+id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+text varchar,
+item_id BIGINT,
+user_id BIGINT,
+created timestamp,
+CONSTRAINT fk_comment_to_item FOREIGN KEY(item_id) REFERENCES items(id),
+CONSTRAINT fk_comment_to_user FOREIGN KEY(user_id) REFERENCES users(id) );

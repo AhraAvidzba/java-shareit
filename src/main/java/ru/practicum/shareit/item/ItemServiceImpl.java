@@ -10,9 +10,8 @@ import ru.practicum.shareit.booking.dto.BookingIdOutDto;
 import ru.practicum.shareit.booking.dto.BookingMapper;
 import ru.practicum.shareit.exceptions.ContentNotFountException;
 import ru.practicum.shareit.exceptions.EditingNotAllowedException;
-import ru.practicum.shareit.item.dto.ItemDto;
-import ru.practicum.shareit.item.dto.ItemIdDto;
-import ru.practicum.shareit.item.dto.ItemMapper;
+import ru.practicum.shareit.exceptions.UserDontHaveBookingException;
+import ru.practicum.shareit.item.dto.*;
 import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.user.UserRepository;
 
@@ -20,10 +19,7 @@ import javax.validation.Validation;
 import javax.validation.Validator;
 import javax.validation.ValidatorFactory;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -32,6 +28,7 @@ public class ItemServiceImpl implements ItemService {
     private final ItemRepository itemRepository;
     private final UserRepository userRepository;
     private final BookingRepository bookingRepository;
+    private final CommentRepository commentRepository;
 
     @Override
     public ItemDto saveItem(ItemDto itemDto, Long userId) {
@@ -105,6 +102,25 @@ public class ItemServiceImpl implements ItemService {
         return itemRepository.findAllByNameOrDescription(text).stream()
                 .map(ItemMapper::toItemDto)
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public CommentDto saveComment(CommentDto commentDto) {
+        Item item = itemRepository.findById(commentDto.getItemId())
+                .orElseThrow(() -> new ContentNotFountException("Вещь не найдена"));
+        User user = userRepository.findById(commentDto.getUserId())
+                .orElseThrow(() -> new ContentNotFountException("Пользователь не найден"));
+        List<Booking> bookingsOfUser = bookingRepository.findByBooker_IdAndEndIsBefore(commentDto.getUserId(),
+                commentDto.getCreated(), Sort.by("start").descending());
+        List<Booking> itemBookingsOfUser = bookingsOfUser.stream()
+                .filter(x -> Objects.equals(x.getItem().getId(), commentDto.getItemId()))
+                .collect(Collectors.toList());
+        if (itemBookingsOfUser.isEmpty()) {
+            throw new UserDontHaveBookingException("Похоже пользователь не бронирован данную вещь");
+        }
+        Comment comment = CommentMapper.mapToComment(commentDto, item, user);
+        Comment savedComment = commentRepository.save(comment);
+        return CommentMapper.mapToCommentDto(savedComment);
     }
 
     private HashMap<Long, BookingIdOutDto> getLastBookings(List<Long> itemId, Long userId) {
