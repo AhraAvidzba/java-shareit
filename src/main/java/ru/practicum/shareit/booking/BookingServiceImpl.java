@@ -63,7 +63,8 @@ public class BookingServiceImpl implements BookingService {
             throw new IsUpToDateException("Статус в актуальном состоянии");
         }
         booking.setStatus(status);
-        return BookingMapper.mapToBookingOutDto(bookingRepository.save(booking));
+        Booking savedBooking = bookingRepository.save(booking);
+        return BookingMapper.mapToBookingOutDto(savedBooking);
     }
 
     public BookingOutDto getBooking(Long userId, Long bookingId) {

@@ -5,6 +5,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.booking.Booking;
 import ru.practicum.shareit.booking.BookingRepository;
+import ru.practicum.shareit.booking.Status;
 import ru.practicum.shareit.booking.dto.BookingIdOutDto;
 import ru.practicum.shareit.booking.dto.BookingMapper;
 import ru.practicum.shareit.exceptions.ContentNotFountException;
@@ -19,6 +20,7 @@ import javax.validation.Validation;
 import javax.validation.Validator;
 import javax.validation.ValidatorFactory;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -68,23 +70,26 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public ItemIdDto getItemById(Long itemId) {
+    public ItemIdDto getItemById(Long itemId, Long userId) {
         Item item = itemRepository.findById(itemId)
                 .orElseThrow(() -> new ContentNotFountException("Вещи с id = " + itemId + " не существует"));
-        List<Booking> lastItemBookings = bookingRepository.findByItemId(itemId, Sort.by("start").descending());
-        List<Booking> nextItemBookings = bookingRepository.findByItemId(itemId, Sort.by("end").ascending());
-        BookingIdOutDto lastBooking = BookingMapper.mapToBookingIdOutDto(getLastBooking(lastItemBookings, LocalDateTime.now()));
-        BookingIdOutDto nextBooking = BookingMapper.mapToBookingIdOutDto(getNextBooking(nextItemBookings, LocalDateTime.now()));
+        BookingIdOutDto lastBooking = BookingMapper.mapToBookingIdOutDto(getLastBooking(itemId, userId));
+        BookingIdOutDto nextBooking = BookingMapper.mapToBookingIdOutDto(getNextBooking(itemId, userId));
         return ItemMapper.toItemIdDto(item, lastBooking, nextBooking);
     }
 
     @Override
-    public List<ItemDto> getItemsOfUser(Long userId) {
+    public List<ItemIdDto> getItemsOfUser(Long userId) {
         userRepository.findById(userId)
                 .orElseThrow(() -> new ContentNotFountException("Пользователь не найден"));
-        return itemRepository.findAllByOwnerId(userId).stream()
-                .map(ItemMapper::toItemDto)
-                .collect(Collectors.toList());
+        List<Item> items = itemRepository.findAllByOwnerId(userId, Sort.by("id").ascending());
+        List<ItemIdDto> itemsIdDto = new ArrayList<>();
+        for (Item item : items) {
+            BookingIdOutDto lastBooking = BookingMapper.mapToBookingIdOutDto(getLastBooking(item.getId(), userId));
+            BookingIdOutDto nextBooking = BookingMapper.mapToBookingIdOutDto(getNextBooking(item.getId(), userId));
+            itemsIdDto.add(ItemMapper.toItemIdDto(item, lastBooking, nextBooking));
+        }
+        return itemsIdDto;
     }
 
     @Override
@@ -97,16 +102,24 @@ public class ItemServiceImpl implements ItemService {
                 .collect(Collectors.toList());
     }
 
-    private Booking getLastBooking(List<Booking> bookings, LocalDateTime targetDate) {
-        for (Booking booking : bookings) {
-            if (booking.getEnd().isBefore(targetDate)) return booking;
+    private Booking getLastBooking(Long itemId, Long userId) {
+        LocalDateTime targetDate = LocalDateTime.now();
+        List<Booking> lastItemBookings = bookingRepository.findByItemId(itemId, Sort.by("end").descending());
+        for (Booking booking : lastItemBookings) {
+            if (booking.getEnd().isBefore(targetDate)
+                    && booking.getItem().getOwner().getId().equals(userId)
+                    && booking.getStatus().equals(Status.APPROVED)) return booking;
         }
         return null;
     }
 
-    private Booking getNextBooking(List<Booking> bookings, LocalDateTime targetDate) {
-        for (Booking booking : bookings) {
-            if (booking.getEnd().isAfter(targetDate)) return booking;
+    private Booking getNextBooking(Long itemId, Long userId) {
+        LocalDateTime targetDate = LocalDateTime.now();
+        List<Booking> nextItemBookings = bookingRepository.findByItemId(itemId, Sort.by("start").ascending());
+        for (Booking booking : nextItemBookings) {
+            if (booking.getStart().isAfter(targetDate)
+                    && booking.getItem().getOwner().getId().equals(userId)
+                    && booking.getStatus().equals(Status.APPROVED)) return booking;
         }
         return null;
     }

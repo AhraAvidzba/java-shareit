@@ -30,15 +30,14 @@ public class BookingMapper {
     }
 
     public static BookingIdOutDto mapToBookingIdOutDto(Booking booking) {
+        if (booking == null) return null;
         BookingIdOutDto bookingDto = new BookingIdOutDto();
-        if (booking != null) {
-            bookingDto.setId(booking.getId());
-            bookingDto.setStart(booking.getStart());
-            bookingDto.setEnd(booking.getEnd());
-            bookingDto.setItemId(booking.getItem().getId());
-            bookingDto.setBookerId(booking.getBooker().getId());
-            bookingDto.setStatus(booking.getStatus());
-        }
+        bookingDto.setId(booking.getId());
+        bookingDto.setStart(booking.getStart());
+        bookingDto.setEnd(booking.getEnd());
+        bookingDto.setItemId(booking.getItem().getId());
+        bookingDto.setBookerId(booking.getBooker().getId());
+        bookingDto.setStatus(booking.getStatus());
         return bookingDto;
     }
 
