@@ -22,6 +22,7 @@ import javax.validation.ValidatorFactory;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -73,8 +74,8 @@ public class ItemServiceImpl implements ItemService {
     public ItemIdDto getItemById(Long itemId, Long userId) {
         Item item = itemRepository.findById(itemId)
                 .orElseThrow(() -> new ContentNotFountException("Вещи с id = " + itemId + " не существует"));
-        BookingIdOutDto lastBooking = BookingMapper.mapToBookingIdOutDto(getLastBooking(itemId, userId));
-        BookingIdOutDto nextBooking = BookingMapper.mapToBookingIdOutDto(getNextBooking(itemId, userId));
+        BookingIdOutDto lastBooking = getLastBookings(List.of(itemId), userId).get(itemId);
+        BookingIdOutDto nextBooking = getNextBookings(List.of(itemId), userId).get(itemId);
         return ItemMapper.toItemIdDto(item, lastBooking, nextBooking);
     }
 
@@ -83,11 +84,15 @@ public class ItemServiceImpl implements ItemService {
         userRepository.findById(userId)
                 .orElseThrow(() -> new ContentNotFountException("Пользователь не найден"));
         List<Item> items = itemRepository.findAllByOwnerId(userId, Sort.by("id").ascending());
+        HashMap<Long, BookingIdOutDto> itemLastBookings = getLastBookings(items.stream()
+                .map(Item::getId).collect(Collectors.toList()), userId);
+        HashMap<Long, BookingIdOutDto> itemNextBookings = getNextBookings(items.stream()
+                .map(Item::getId).collect(Collectors.toList()), userId);
         List<ItemIdDto> itemsIdDto = new ArrayList<>();
         for (Item item : items) {
-            BookingIdOutDto lastBooking = BookingMapper.mapToBookingIdOutDto(getLastBooking(item.getId(), userId));
-            BookingIdOutDto nextBooking = BookingMapper.mapToBookingIdOutDto(getNextBooking(item.getId(), userId));
-            itemsIdDto.add(ItemMapper.toItemIdDto(item, lastBooking, nextBooking));
+            itemsIdDto.add(ItemMapper.toItemIdDto(item,
+                    itemLastBookings.get(item.getId()),
+                    itemNextBookings.get(item.getId())));
         }
         return itemsIdDto;
     }
@@ -102,26 +107,36 @@ public class ItemServiceImpl implements ItemService {
                 .collect(Collectors.toList());
     }
 
-    private Booking getLastBooking(Long itemId, Long userId) {
+    private HashMap<Long, BookingIdOutDto> getLastBookings(List<Long> itemId, Long userId) {
         LocalDateTime targetDate = LocalDateTime.now();
-        List<Booking> lastItemBookings = bookingRepository.findByItemId(itemId, Sort.by("end").descending());
+        List<Booking> lastItemBookings = bookingRepository.findByItemIdIn(itemId, Sort.by("end").descending());
+        HashMap<Long, BookingIdOutDto> itemBookings = new HashMap<>();
         for (Booking booking : lastItemBookings) {
-            if (booking.getEnd().isBefore(targetDate)
-                    && booking.getItem().getOwner().getId().equals(userId)
-                    && booking.getStatus().equals(Status.APPROVED)) return booking;
+            if (!itemBookings.containsKey(booking.getItem().getId())) {
+                if (booking.getEnd().isBefore(targetDate)
+                        && booking.getItem().getOwner().getId().equals(userId)
+                        && booking.getStatus().equals(Status.APPROVED)) {
+                    itemBookings.put(booking.getItem().getId(), BookingMapper.mapToBookingIdOutDto(booking));
+                }
+            }
         }
-        return null;
+        return itemBookings;
     }
 
-    private Booking getNextBooking(Long itemId, Long userId) {
+    private HashMap<Long, BookingIdOutDto> getNextBookings(List<Long> itemId, Long userId) {
         LocalDateTime targetDate = LocalDateTime.now();
-        List<Booking> nextItemBookings = bookingRepository.findByItemId(itemId, Sort.by("start").ascending());
+        List<Booking> nextItemBookings = bookingRepository.findByItemIdIn(itemId, Sort.by("start").ascending());
+        HashMap<Long, BookingIdOutDto> itemBookings = new HashMap<>();
         for (Booking booking : nextItemBookings) {
-            if (booking.getStart().isAfter(targetDate)
-                    && booking.getItem().getOwner().getId().equals(userId)
-                    && booking.getStatus().equals(Status.APPROVED)) return booking;
+            if (!itemBookings.containsKey(booking.getItem().getId())) {
+                if (booking.getStart().isAfter(targetDate)
+                        && booking.getItem().getOwner().getId().equals(userId)
+                        && booking.getStatus().equals(Status.APPROVED)) {
+                    itemBookings.put(booking.getItem().getId(), BookingMapper.mapToBookingIdOutDto(booking));
+                }
+            }
         }
-        return null;
+        return itemBookings;
     }
 
 }
