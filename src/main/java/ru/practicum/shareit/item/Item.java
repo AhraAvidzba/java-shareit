@@ -1,21 +1,20 @@
-package ru.practicum.shareit.item.dto;
+package ru.practicum.shareit.item;
 
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 import ru.practicum.shareit.request.ItemRequest;
 import ru.practicum.shareit.user.User;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 
-/**
- * TODO Sprint add-controllers.
- */
+@ToString
 @Getter
 @Setter
-@Builder
-public class ItemDto {
+@Builder(toBuilder = true)
+public class Item {
     private Long id;
     @NotBlank
     private String name;
@@ -23,6 +22,7 @@ public class ItemDto {
     private String description;
     @NotNull
     private Boolean available;
+    @NotNull
     private User owner;
     private ItemRequest request;
 }
