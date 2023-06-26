@@ -16,9 +16,8 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
             "from Booking as b " +
             "where b.booker.id = ?1 " +
             "and b.start < ?2 " +
-            "and b.end > ?2 " +
-            "order by b.start")
-    List<Booking> findByCurrentBooker(Long bookerId, LocalDateTime start);
+            "and b.end > ?2 ")
+    List<Booking> findByCurrentBooker(Long bookerId, LocalDateTime start, Sort sort);
 
     List<Booking> findByBooker_IdAndEndIsBefore(Long bookerId, LocalDateTime end, Sort sort);
 
@@ -34,9 +33,8 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
             "from Booking as b " +
             "where b.item.owner.id = ?1 " +
             "and b.start < ?2 " +
-            "and b.end > ?2 " +
-            "order by b.start")
-    List<Booking> findByOwnerCurrentBooker(Long ownerId, LocalDateTime start);
+            "and b.end > ?2 ")
+    List<Booking> findByOwnerCurrentBooker(Long ownerId, LocalDateTime start, Sort sort);
 
     List<Booking> findByItemOwnerIdAndEndIsBefore(Long ownerId, LocalDateTime end, Sort sort);
 

@@ -68,16 +68,20 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public ItemIdDto getItemById(Long itemId, Long userId) {
+    public ItemWithBookAndCommentsDto getItemById(Long itemId, Long userId) {
         Item item = itemRepository.findById(itemId)
                 .orElseThrow(() -> new ContentNotFountException("Вещи с id = " + itemId + " не существует"));
         BookingIdOutDto lastBooking = getLastBookings(List.of(itemId), userId).get(itemId);
         BookingIdOutDto nextBooking = getNextBookings(List.of(itemId), userId).get(itemId);
-        return ItemMapper.toItemIdDto(item, lastBooking, nextBooking);
+        List<CommentDto> commentsDto = getItemComments(List.of(itemId)).get(itemId);
+
+        return ItemMapper.toItemWithBookAndCommentsDto(item,
+                lastBooking, nextBooking,
+                commentsDto == null ? new ArrayList<>() : commentsDto);
     }
 
     @Override
-    public List<ItemIdDto> getItemsOfUser(Long userId) {
+    public List<ItemWithBookAndCommentsDto> getItemsOfUser(Long userId) {
         userRepository.findById(userId)
                 .orElseThrow(() -> new ContentNotFountException("Пользователь не найден"));
         List<Item> items = itemRepository.findAllByOwnerId(userId, Sort.by("id").ascending());
@@ -85,13 +89,18 @@ public class ItemServiceImpl implements ItemService {
                 .map(Item::getId).collect(Collectors.toList()), userId);
         HashMap<Long, BookingIdOutDto> itemNextBookings = getNextBookings(items.stream()
                 .map(Item::getId).collect(Collectors.toList()), userId);
-        List<ItemIdDto> itemsIdDto = new ArrayList<>();
+        HashMap<Long, List<CommentDto>> itemCommentsDto = getItemComments(items.stream()
+                .map(Item::getId)
+                .collect(Collectors.toList()));
+
+        List<ItemWithBookAndCommentsDto> itemsWithBookAndCommentsDto = new ArrayList<>();
         for (Item item : items) {
-            itemsIdDto.add(ItemMapper.toItemIdDto(item,
+            itemsWithBookAndCommentsDto.add(ItemMapper.toItemWithBookAndCommentsDto(item,
                     itemLastBookings.get(item.getId()),
-                    itemNextBookings.get(item.getId())));
+                    itemNextBookings.get(item.getId()),
+                    itemCommentsDto.get(item.getId()) == null ? new ArrayList<>() : itemCommentsDto.get(item.getId())));
         }
-        return itemsIdDto;
+        return itemsWithBookAndCommentsDto;
     }
 
     @Override
@@ -116,7 +125,7 @@ public class ItemServiceImpl implements ItemService {
                 .filter(x -> Objects.equals(x.getItem().getId(), commentDto.getItemId()))
                 .collect(Collectors.toList());
         if (itemBookingsOfUser.isEmpty()) {
-            throw new UserDontHaveBookingException("Похоже пользователь не бронирован данную вещь");
+            throw new UserDontHaveBookingException("Похоже пользователь не бронировал данную вещь");
         }
         Comment comment = CommentMapper.mapToComment(commentDto, item, user);
         Comment savedComment = commentRepository.save(comment);
@@ -153,6 +162,20 @@ public class ItemServiceImpl implements ItemService {
             }
         }
         return itemBookings;
+    }
+
+    private HashMap<Long, List<CommentDto>> getItemComments(List<Long> itemIds) {
+        List<Comment> comments = commentRepository.findByItemIdIn(itemIds);
+        List<CommentDto> commentsDto = comments.stream().map(CommentMapper::mapToCommentDto).collect(Collectors.toList());
+        HashMap<Long, List<CommentDto>> itemComments = new HashMap<>();
+        for (CommentDto commentDto : commentsDto) {
+            Long id = commentDto.getItemId();
+            if (!itemComments.containsKey(id)) {
+                itemComments.put(id, new ArrayList<>());
+            }
+            itemComments.get(id).add(commentDto);
+        }
+        return itemComments;
     }
 
 }

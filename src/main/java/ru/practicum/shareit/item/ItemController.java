@@ -5,7 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.item.dto.CommentDto;
 import ru.practicum.shareit.item.dto.ItemDto;
-import ru.practicum.shareit.item.dto.ItemIdDto;
+import ru.practicum.shareit.item.dto.ItemWithBookAndCommentsDto;
 
 import javax.validation.Valid;
 import java.util.List;
@@ -36,14 +36,14 @@ public class ItemController {
     }
 
     @GetMapping("/{itemId}")
-    public ItemIdDto getItemById(@PathVariable Long itemId,
-                                 @RequestHeader("X-Sharer-User-Id") Long userId) {
+    public ItemWithBookAndCommentsDto getItemById(@PathVariable Long itemId,
+                                                  @RequestHeader("X-Sharer-User-Id") Long userId) {
         log.info("Возвращена вещь с id = {}", itemId);
         return itemService.getItemById(itemId, userId);
     }
 
     @GetMapping
-    public List<ItemIdDto> getItemsOfUser(@RequestHeader("X-Sharer-User-Id") Long userId) {
+    public List<ItemWithBookAndCommentsDto> getItemsOfUser(@RequestHeader("X-Sharer-User-Id") Long userId) {
         log.info("Возвращен список вещей пользователя с id = {}", userId);
         return itemService.getItemsOfUser(userId);
     }
