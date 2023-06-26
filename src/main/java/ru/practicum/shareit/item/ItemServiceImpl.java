@@ -71,8 +71,9 @@ public class ItemServiceImpl implements ItemService {
     public ItemWithBookAndCommentsDto getItemById(Long itemId, Long userId) {
         Item item = itemRepository.findById(itemId)
                 .orElseThrow(() -> new ContentNotFountException("Вещи с id = " + itemId + " не существует"));
-        BookingIdOutDto lastBooking = getLastBookings(List.of(itemId), userId).get(itemId);
-        BookingIdOutDto nextBooking = getNextBookings(List.of(itemId), userId).get(itemId);
+        LocalDateTime targetDate = LocalDateTime.now();
+        BookingIdOutDto lastBooking = getLastBookings(List.of(itemId), userId, targetDate).get(itemId);
+        BookingIdOutDto nextBooking = getNextBookings(List.of(itemId), userId, targetDate).get(itemId);
         List<CommentDto> commentsDto = getItemComments(List.of(itemId)).get(itemId);
 
         return ItemMapper.toItemWithBookAndCommentsDto(item,
@@ -84,11 +85,12 @@ public class ItemServiceImpl implements ItemService {
     public List<ItemWithBookAndCommentsDto> getItemsOfUser(Long userId) {
         userRepository.findById(userId)
                 .orElseThrow(() -> new ContentNotFountException("Пользователь не найден"));
+        LocalDateTime targetDate = LocalDateTime.now();
         List<Item> items = itemRepository.findAllByOwnerId(userId, Sort.by("id").ascending());
         HashMap<Long, BookingIdOutDto> itemLastBookings = getLastBookings(items.stream()
-                .map(Item::getId).collect(Collectors.toList()), userId);
+                .map(Item::getId).collect(Collectors.toList()), userId, targetDate);
         HashMap<Long, BookingIdOutDto> itemNextBookings = getNextBookings(items.stream()
-                .map(Item::getId).collect(Collectors.toList()), userId);
+                .map(Item::getId).collect(Collectors.toList()), userId, targetDate);
         HashMap<Long, List<CommentDto>> itemCommentsDto = getItemComments(items.stream()
                 .map(Item::getId)
                 .collect(Collectors.toList()));
@@ -132,13 +134,12 @@ public class ItemServiceImpl implements ItemService {
         return CommentMapper.mapToCommentDto(savedComment);
     }
 
-    private HashMap<Long, BookingIdOutDto> getLastBookings(List<Long> itemId, Long userId) {
-        LocalDateTime targetDate = LocalDateTime.now();
+    private HashMap<Long, BookingIdOutDto> getLastBookings(List<Long> itemId, Long userId, LocalDateTime targetDate) {
         List<Booking> lastItemBookings = bookingRepository.findByItemIdIn(itemId, Sort.by("end").descending());
         HashMap<Long, BookingIdOutDto> itemBookings = new HashMap<>();
         for (Booking booking : lastItemBookings) {
             if (!itemBookings.containsKey(booking.getItem().getId())) {
-                if (booking.getEnd().isBefore(targetDate)
+                if (booking.getStart().isBefore(targetDate)
                         && booking.getItem().getOwner().getId().equals(userId)
                         && booking.getStatus().equals(Status.APPROVED)) {
                     itemBookings.put(booking.getItem().getId(), BookingMapper.mapToBookingIdOutDto(booking));
@@ -148,8 +149,7 @@ public class ItemServiceImpl implements ItemService {
         return itemBookings;
     }
 
-    private HashMap<Long, BookingIdOutDto> getNextBookings(List<Long> itemId, Long userId) {
-        LocalDateTime targetDate = LocalDateTime.now();
+    private HashMap<Long, BookingIdOutDto> getNextBookings(List<Long> itemId, Long userId, LocalDateTime targetDate) {
         List<Booking> nextItemBookings = bookingRepository.findByItemIdIn(itemId, Sort.by("start").ascending());
         HashMap<Long, BookingIdOutDto> itemBookings = new HashMap<>();
         for (Booking booking : nextItemBookings) {
