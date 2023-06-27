@@ -8,6 +8,7 @@ import ru.practicum.shareit.booking.BookingRepository;
 import ru.practicum.shareit.booking.Status;
 import ru.practicum.shareit.booking.dto.BookingIdOutDto;
 import ru.practicum.shareit.booking.dto.BookingMapper;
+import ru.practicum.shareit.exceptions.BookingBadRequestException;
 import ru.practicum.shareit.exceptions.ContentNotFountException;
 import ru.practicum.shareit.exceptions.EditingNotAllowedException;
 import ru.practicum.shareit.exceptions.UserDontHaveBookingException;
@@ -121,13 +122,13 @@ public class ItemServiceImpl implements ItemService {
                 .orElseThrow(() -> new ContentNotFountException("Вещь не найдена"));
         User user = userRepository.findById(commentDto.getUserId())
                 .orElseThrow(() -> new ContentNotFountException("Пользователь не найден"));
-        List<Booking> bookingsOfUser = bookingRepository.findByBooker_IdAndEndIsBefore(commentDto.getUserId(),
+        List<Booking> bookingsOfUser = bookingRepository.findByBookerIdAndEndIsBefore(commentDto.getUserId(),
                 commentDto.getCreated(), Sort.by("start").descending());
         List<Booking> itemBookingsOfUser = bookingsOfUser.stream()
                 .filter(x -> Objects.equals(x.getItem().getId(), commentDto.getItemId()))
                 .collect(Collectors.toList());
         if (itemBookingsOfUser.isEmpty()) {
-            throw new UserDontHaveBookingException("Похоже пользователь не бронировал данную вещь");
+            throw new BookingBadRequestException("Похоже пользователь не бронировал данную вещь");
         }
         Comment comment = CommentMapper.mapToComment(commentDto, item, user);
         Comment savedComment = commentRepository.save(comment);

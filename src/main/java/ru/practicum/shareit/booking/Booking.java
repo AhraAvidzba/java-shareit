@@ -21,12 +21,12 @@ public class Booking {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "_start")
+    @Column(name = "start_date")
     @Future
     @NotNull
     private LocalDateTime start;
 
-    @Column(name = "_end")
+    @Column(name = "end_date")
     @Future
     @NotNull
     private LocalDateTime end;
@@ -41,7 +41,7 @@ public class Booking {
     @NotNull
     private User booker;
 
-    @Column(name = "_status")
+    @Column(name = "status")
     @Enumerated(EnumType.STRING)
     @NotNull
     private Status status;

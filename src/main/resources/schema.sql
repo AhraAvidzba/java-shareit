@@ -28,11 +28,11 @@ CONSTRAINT fk_items_to_request FOREIGN KEY(request_id) REFERENCES item_requests(
 
 CREATE TABLE IF NOT EXISTS bookings (
 id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-_start timestamp,
-_end timestamp,
+start_date timestamp,
+end_date timestamp,
 item_id BIGINT,
 user_id BIGINT,
-_status varchar,
+status varchar,
 CONSTRAINT fk_booking_to_item FOREIGN KEY(item_id) REFERENCES items(id),
 CONSTRAINT fk_booking_to_user FOREIGN KEY(user_id) REFERENCES users(id) );
 

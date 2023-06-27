@@ -10,7 +10,7 @@ import java.util.List;
 public interface BookingRepository extends JpaRepository<Booking, Long> {
 
     //Методы для получения бронирований сделанных переданным пользователем
-    List<Booking> findByBooker_Id(Long bookerId, Sort sort);
+    List<Booking> findByBookerId(Long bookerId, Sort sort);
 
     @Query("select b " +
             "from Booking as b " +
@@ -19,11 +19,11 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
             "and b.end > ?2 ")
     List<Booking> findByCurrentBooker(Long bookerId, LocalDateTime start, Sort sort);
 
-    List<Booking> findByBooker_IdAndEndIsBefore(Long bookerId, LocalDateTime end, Sort sort);
+    List<Booking> findByBookerIdAndEndIsBefore(Long bookerId, LocalDateTime end, Sort sort);
 
-    List<Booking> findByBooker_IdAndStartIsAfter(Long bookerId, LocalDateTime end, Sort sort);
+    List<Booking> findByBookerIdAndStartIsAfter(Long bookerId, LocalDateTime end, Sort sort);
 
-    List<Booking> findByBooker_IdAndStatus(Long bookerId, Status status, Sort sort);
+    List<Booking> findByBookerIdAndStatus(Long bookerId, Status status, Sort sort);
 
 
     //Методы для получения бронирований вещей владельцем которых являетя переданный пользователь
@@ -46,5 +46,12 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
     List<Booking> findByItemId(Long itemId, Sort sort);
 
     List<Booking> findByItemIdIn(List<Long> itemId, Sort sort);
+
+    @Query("select b " +
+            "from Booking as b " +
+            "where b.item.id = ?1 " +
+            "and (b.start between ?2 and ?3 " +
+            "or b.end between ?2 and ?3) ")
+    List<Booking> findTimeCrossingBookings(Long itemId, LocalDateTime start, LocalDateTime end);
 
 }

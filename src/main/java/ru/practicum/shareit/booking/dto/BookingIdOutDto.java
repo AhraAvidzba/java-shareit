@@ -15,12 +15,8 @@ import java.time.LocalDateTime;
 public class BookingIdOutDto {
     private Long id;
 
-    @Future
-    @NotNull
     private LocalDateTime start;
 
-    @Future
-    @NotNull
     private LocalDateTime end;
 
     private Long itemId;

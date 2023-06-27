@@ -28,21 +28,19 @@ public class BookingServiceImpl implements BookingService {
     public BookingOutDto saveBooking(BookingInDto bookingDto) {
         Item item = getItem(bookingDto.getItemId());
         if (item.getOwner().getId().equals(bookingDto.getBookerId())) {
-            throw new SameBookerAndOwnerException("Вледелец вещи не может ее забронировать");
+            throw new ContentNotFountException("Вледелец вещи не может ее забронировать");
         }
         if (!item.getAvailable()) {
-            throw new UnavalableItemBookingException("Данная вещь недоступна для бранирования");
+            throw new BookingBadRequestException("Данная вещь недоступна для бранирования");
         }
         if (bookingDto.getStart().isAfter(bookingDto.getEnd())
                 || bookingDto.getStart().isEqual(bookingDto.getEnd())) {
-            throw new IncorrectBookingDateException("Время начала бронирования не может быть позже либо равным времени его окончания");
+            throw new BookingBadRequestException("Время начала бронирования не может быть позже либо равным времени его окончания");
         }
-        List<BookingOutDto> bookingsOfItem = findAllBookingsOfItem(bookingDto.getItemId());
-        for (BookingOutDto booking : bookingsOfItem) {
-            if (bookingDto.getStart().isAfter(booking.getStart()) && bookingDto.getStart().isBefore(booking.getEnd())
-                    || bookingDto.getEnd().isAfter(booking.getStart()) && bookingDto.getEnd().isBefore(booking.getEnd())) {
-                throw new BookingTimeCrossingException("Данная вещь уже забронирована в запрашиваемые даты");
-            }
+        List<Booking> bookingsOfItem = bookingRepository.findTimeCrossingBookings(bookingDto.getItemId(),
+                bookingDto.getStart(), bookingDto.getEnd());
+        if (!bookingsOfItem.isEmpty()) {
+            throw new ContentNotFountException("Данная вещь уже забронирована в запрашиваемые даты");
         }
         User user = getUser(bookingDto.getBookerId());
         bookingDto.setStatus(Status.WAITING);
@@ -56,11 +54,11 @@ public class BookingServiceImpl implements BookingService {
         Booking booking = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new ContentNotFountException("Бронирования с id = " + bookingId + " не существует"));
         if (!Objects.equals(booking.getItem().getOwner().getId(), userId)) {
-            throw new AccessRestrictedException("Бранирование может подтвердить только владелец вещи");
+            throw new ContentNotFountException("Бранирование может подтвердить только владелец вещи");
         }
         Status status = isApproved ? Status.APPROVED : Status.REJECTED;
         if (Objects.equals(booking.getStatus(), status)) {
-            throw new IsUpToDateException("Статус в актуальном состоянии");
+            throw new BookingBadRequestException("Статус в актуальном состоянии");
         }
         booking.setStatus(status);
         Booking savedBooking = bookingRepository.save(booking);
@@ -72,7 +70,7 @@ public class BookingServiceImpl implements BookingService {
         if (Objects.equals(booking.getItem().getOwner().getId(), userId) || Objects.equals(booking.getBooker().getId(), userId)) {
             return BookingMapper.mapToBookingOutDto(booking);
         }
-        throw new AccessRestrictedException("Просматривать бронирование может только его автор, " +
+        throw new ContentNotFountException("Просматривать бронирование может только его автор, " +
                 "либо владелец вещи, к которой относится это бронирование");
 
     }
@@ -84,19 +82,19 @@ public class BookingServiceImpl implements BookingService {
         List<Booking> bookings;
         switch (state) {
             case ALL:
-                bookings = bookingRepository.findByBooker_Id(userId, Sort.by("start").descending());
+                bookings = bookingRepository.findByBookerId(userId, Sort.by("start").descending());
                 break;
             case CURRENT:
                 bookings = bookingRepository.findByCurrentBooker(userId, LocalDateTime.now(), Sort.by("id").ascending());
                 break;
             case PAST:
-                bookings = bookingRepository.findByBooker_IdAndEndIsBefore(userId, LocalDateTime.now(), Sort.by("start").descending());
+                bookings = bookingRepository.findByBookerIdAndEndIsBefore(userId, LocalDateTime.now(), Sort.by("start").descending());
                 break;
             case FUTURE:
-                bookings = bookingRepository.findByBooker_IdAndStartIsAfter(userId, LocalDateTime.now(), Sort.by("start").descending());
+                bookings = bookingRepository.findByBookerIdAndStartIsAfter(userId, LocalDateTime.now(), Sort.by("start").descending());
                 break;
             default:
-                bookings = bookingRepository.findByBooker_IdAndStatus(userId, Status.valueOf(state.toString()), Sort.by("start").descending());
+                bookings = bookingRepository.findByBookerIdAndStatus(userId, Status.valueOf(state.toString()), Sort.by("start").descending());
         }
         return bookings.stream()
                 .map(BookingMapper::mapToBookingOutDto)
