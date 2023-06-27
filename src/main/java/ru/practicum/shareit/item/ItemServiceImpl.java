@@ -11,7 +11,6 @@ import ru.practicum.shareit.booking.dto.BookingMapper;
 import ru.practicum.shareit.exceptions.BookingBadRequestException;
 import ru.practicum.shareit.exceptions.ContentNotFountException;
 import ru.practicum.shareit.exceptions.EditingNotAllowedException;
-import ru.practicum.shareit.exceptions.UserDontHaveBookingException;
 import ru.practicum.shareit.item.dto.*;
 import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.user.UserRepository;
@@ -73,9 +72,9 @@ public class ItemServiceImpl implements ItemService {
         Item item = itemRepository.findById(itemId)
                 .orElseThrow(() -> new ContentNotFountException("Вещи с id = " + itemId + " не существует"));
         LocalDateTime targetDate = LocalDateTime.now();
-        BookingIdOutDto lastBooking = getLastBookings(List.of(itemId), userId, targetDate).get(itemId);
-        BookingIdOutDto nextBooking = getNextBookings(List.of(itemId), userId, targetDate).get(itemId);
-        List<CommentDto> commentsDto = getItemComments(List.of(itemId)).get(itemId);
+        BookingIdOutDto lastBooking = getLastBooking(itemId, userId, targetDate);
+        BookingIdOutDto nextBooking = getNextBooking(itemId, userId, targetDate);
+        List<CommentDto> commentsDto = getItemComments(itemId);
 
         return ItemMapper.toItemWithBookAndCommentsDto(item,
                 lastBooking, nextBooking,
@@ -150,6 +149,16 @@ public class ItemServiceImpl implements ItemService {
         return itemBookings;
     }
 
+    private BookingIdOutDto getLastBooking(Long itemId, Long userId, LocalDateTime targetDate) {
+        List<Booking> lastItemBookings = bookingRepository.findByItemId(itemId, Sort.by("end").descending());
+        for (Booking booking : lastItemBookings) {
+            if (booking.getStart().isBefore(targetDate)
+                    && booking.getItem().getOwner().getId().equals(userId)
+                    && booking.getStatus().equals(Status.APPROVED)) return BookingMapper.mapToBookingIdOutDto(booking);
+        }
+        return null;
+    }
+
     private HashMap<Long, BookingIdOutDto> getNextBookings(List<Long> itemId, Long userId, LocalDateTime targetDate) {
         List<Booking> nextItemBookings = bookingRepository.findByItemIdIn(itemId, Sort.by("start").ascending());
         HashMap<Long, BookingIdOutDto> itemBookings = new HashMap<>();
@@ -163,6 +172,17 @@ public class ItemServiceImpl implements ItemService {
             }
         }
         return itemBookings;
+    }
+
+
+    private BookingIdOutDto getNextBooking(Long itemId, Long userId, LocalDateTime targetDate) {
+        List<Booking> nextItemBookings = bookingRepository.findByItemId(itemId, Sort.by("start").ascending());
+        for (Booking booking : nextItemBookings) {
+            if (booking.getStart().isAfter(targetDate)
+                    && booking.getItem().getOwner().getId().equals(userId)
+                    && booking.getStatus().equals(Status.APPROVED)) return BookingMapper.mapToBookingIdOutDto(booking);
+        }
+        return null;
     }
 
     private HashMap<Long, List<CommentDto>> getItemComments(List<Long> itemIds) {
@@ -179,4 +199,8 @@ public class ItemServiceImpl implements ItemService {
         return itemComments;
     }
 
+    private List<CommentDto> getItemComments(Long itemId) {
+        List<Comment> comments = commentRepository.findByItemId(itemId);
+        return comments.stream().map(CommentMapper::mapToCommentDto).collect(Collectors.toList());
+    }
 }

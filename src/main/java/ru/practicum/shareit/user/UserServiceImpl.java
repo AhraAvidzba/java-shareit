@@ -29,11 +29,6 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserDto saveUser(UserDto userDto) {
         User user = UserMapper.toUser(userDto);
-        Optional<User> sameEmailUser = userRepository.getUserByEmail(user.getEmail());
-//        тесты postman требуют, чтоб валидация проверялась на уровне бд (для генерации id)
-//        if (sameEmailUser.isPresent()) {
-//            throw new ContentAlreadyExistException("Пользователь с таким email уже существует");
-//        }
         return UserMapper.toUserDto(userRepository.save(user));
     }
 
@@ -73,7 +68,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void deleteUser(Long id) {
-        User user = userRepository.findById(id)
+        userRepository.findById(id)
                 .orElseThrow(() -> new ContentNotFountException("Пользователя с id = " + id + " не существует"));
         userRepository.deleteById(id);
     }
