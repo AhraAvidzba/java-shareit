@@ -3,7 +3,9 @@ package ru.practicum.shareit.item;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
+import ru.practicum.shareit.item.dto.CommentDto;
 import ru.practicum.shareit.item.dto.ItemDto;
+import ru.practicum.shareit.item.dto.ItemWithBookAndCommentsDto;
 
 import javax.validation.Valid;
 import java.util.List;
@@ -34,13 +36,14 @@ public class ItemController {
     }
 
     @GetMapping("/{itemId}")
-    public ItemDto getItemById(@PathVariable Long itemId) {
+    public ItemWithBookAndCommentsDto getItemById(@PathVariable Long itemId,
+                                                  @RequestHeader("X-Sharer-User-Id") Long userId) {
         log.info("Возвращена вещь с id = {}", itemId);
-        return itemService.getItemById(itemId);
+        return itemService.getItemById(itemId, userId);
     }
 
     @GetMapping
-    public List<ItemDto> getItemsOfUser(@RequestHeader("X-Sharer-User-Id") Long userId) {
+    public List<ItemWithBookAndCommentsDto> getItemsOfUser(@RequestHeader("X-Sharer-User-Id") Long userId) {
         log.info("Возвращен список вещей пользователя с id = {}", userId);
         return itemService.getItemsOfUser(userId);
     }
@@ -49,5 +52,16 @@ public class ItemController {
     public List<ItemDto> searchItems(@RequestParam(name = "text") String text) {
         log.info("Возвращен список всех вещей содеражащих в названии либо описании текст: {} ", text);
         return itemService.searchItems(text);
+    }
+
+    @PostMapping("/{itemId}/comment")
+    public CommentDto saveComment(@Valid @RequestBody CommentDto commentDto,
+                                  @RequestHeader("X-Sharer-User-Id") Long userId,
+                                  @PathVariable(name = "itemId") Long itemId) {
+        commentDto.setUserId(userId);
+        commentDto.setItemId(itemId);
+        CommentDto savedCommentDto = itemService.saveComment(commentDto);
+        log.info("Сохранен комментарий для вещи с id = {}", savedCommentDto.getItemId());
+        return savedCommentDto;
     }
 }

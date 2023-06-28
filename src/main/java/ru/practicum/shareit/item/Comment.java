@@ -1,35 +1,28 @@
-package ru.practicum.shareit.booking;
+package ru.practicum.shareit.item;
 
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
-import ru.practicum.shareit.item.Item;
 import ru.practicum.shareit.user.User;
 
 import javax.persistence.*;
-import javax.validation.constraints.Future;
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "bookings")
+@Table(name = "comments")
 @ToString
 @Getter
 @Setter
-public class Booking {
+public class Comment {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "start_date")
-    @Future
-    @NotNull
-    private LocalDateTime start;
-
-    @Column(name = "end_date")
-    @Future
-    @NotNull
-    private LocalDateTime end;
+    @Column(name = "text")
+    @NotBlank
+    private String text;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "item_id")
@@ -39,11 +32,8 @@ public class Booking {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     @NotNull
-    private User booker;
+    private User user;
 
-    @Column(name = "status")
-    @Enumerated(EnumType.STRING)
-    @NotNull
-    private Status status;
-
+    @Column(name = "created")
+    private LocalDateTime created = LocalDateTime.now();
 }

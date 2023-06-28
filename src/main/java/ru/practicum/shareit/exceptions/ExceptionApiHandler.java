@@ -15,7 +15,7 @@ public class ExceptionApiHandler {
     @ExceptionHandler(ContentNotFountException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public Map<String, String> handleException(ContentNotFountException exception) {
-        return Map.of("Ошибка поиска: ", exception.getMessage());
+        return Map.of("error: ", exception.getMessage());
     }
 
     @ExceptionHandler(ContentAlreadyExistException.class)
@@ -27,13 +27,19 @@ public class ExceptionApiHandler {
     @ExceptionHandler(EditingNotAllowedException.class)
     @ResponseStatus(HttpStatus.FORBIDDEN)
     public Map<String, String> handleException(EditingNotAllowedException exception) {
-        return Map.of("Редактирование невозможно: ", exception.getMessage());
+        return Map.of("Операция невозможна: ", exception.getMessage());
     }
 
     @ExceptionHandler(NumberFormatException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public Map<String, String> handleException(NumberFormatException exception) {
         return Map.of("Неверный формат данных: ", exception.getMessage());
+    }
+
+    @ExceptionHandler(UnknownStateException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public Map<String, String> handleException(UnknownStateException exception) {
+        return Map.of("error", "Unknown state: " + exception.getMessage());
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
@@ -46,5 +52,11 @@ public class ExceptionApiHandler {
             messages.put(field, message);
         });
         return messages;
+    }
+
+    @ExceptionHandler(BookingBadRequestException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public Map<String, String> handleException(BookingBadRequestException exception) {
+        return Map.of("error", exception.getMessage());
     }
 }
