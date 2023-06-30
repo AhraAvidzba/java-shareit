@@ -65,8 +65,7 @@ public class BookingController {
 
 
     @GetMapping("/item/{itemId}")
-    public List<BookingOutDto> findAllBookingsOfItem(@RequestHeader("X-Sharer-User-Id") Long userId,
-                                                     @PathVariable(name = "itemId") Long itemId) {
+    public List<BookingOutDto> findAllBookingsOfItem(@PathVariable(name = "itemId") Long itemId) {
         return bookingService.findAllBookingsOfItem(itemId);
     }
 }
