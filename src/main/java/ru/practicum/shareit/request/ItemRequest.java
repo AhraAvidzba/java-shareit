@@ -8,7 +8,7 @@ import javax.persistence.*;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "item_requests")
+@Table(name = "requests")
 @Data
 @NoArgsConstructor
 public class ItemRequest {
@@ -21,7 +21,7 @@ public class ItemRequest {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
-    private User requestor;
+    private User requester;
 
     @Column(name = "creation_date")
     private LocalDateTime created;

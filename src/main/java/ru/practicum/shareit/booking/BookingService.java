@@ -10,11 +10,11 @@ public interface BookingService {
 
     BookingOutDto setStatus(Long bookingId, Long userId, Boolean isApproved);
 
-    public BookingOutDto getBooking(Long userId, Long bookingId);
+    BookingOutDto getBooking(Long userId, Long bookingId);
 
-    List<BookingOutDto> findAllBookingsByState(Long userId, State state);
+    List<BookingOutDto> findAllBookingsByState(Long userId, State state, int from, int size);
 
-    List<BookingOutDto> findAllOwnerBookingsByState(Long ownerId, State state);
+    List<BookingOutDto> findAllOwnerBookingsByState(Long ownerId, State state, int from, int size);
 
     List<BookingOutDto> findAllBookingsOfItem(Long itemId);
 }

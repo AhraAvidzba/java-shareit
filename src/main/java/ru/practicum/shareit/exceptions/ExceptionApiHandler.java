@@ -59,4 +59,10 @@ public class ExceptionApiHandler {
     public Map<String, String> handleException(BookingBadRequestException exception) {
         return Map.of("error", exception.getMessage());
     }
+
+    @ExceptionHandler(IncorrectParameterException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public Map<String, String> handleException(IncorrectParameterException exception) {
+        return Map.of("error", exception.getMessage());
+    }
 }

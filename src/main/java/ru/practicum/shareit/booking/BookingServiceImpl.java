@@ -1,6 +1,7 @@
 package ru.practicum.shareit.booking;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.booking.dto.BookingInDto;
@@ -8,6 +9,7 @@ import ru.practicum.shareit.booking.dto.BookingMapper;
 import ru.practicum.shareit.booking.dto.BookingOutDto;
 import ru.practicum.shareit.exceptions.BookingBadRequestException;
 import ru.practicum.shareit.exceptions.ContentNotFountException;
+import ru.practicum.shareit.exceptions.IncorrectParameterException;
 import ru.practicum.shareit.item.Item;
 import ru.practicum.shareit.item.ItemRepository;
 import ru.practicum.shareit.user.User;
@@ -77,25 +79,31 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    public List<BookingOutDto> findAllBookingsByState(Long userId, State state) {
+    public List<BookingOutDto> findAllBookingsByState(Long userId, State state, int from, int size) {
+        checkPageable(from, size);
         //Проверка существования пользователя
         getUser(userId);
         List<Booking> bookings;
         switch (state) {
             case ALL:
-                bookings = bookingRepository.findByBookerId(userId, Sort.by("start").descending());
+                bookings = bookingRepository.findByBookerId(userId,
+                        PageRequest.of(from / size, size, Sort.by("start").descending()));
                 break;
             case CURRENT:
-                bookings = bookingRepository.findByCurrentBooker(userId, LocalDateTime.now(), Sort.by("id").ascending());
+                bookings = bookingRepository.findByCurrentBooker(userId, LocalDateTime.now(),
+                        PageRequest.of(from / size, size, Sort.by("id").ascending()));
                 break;
             case PAST:
-                bookings = bookingRepository.findByBookerIdAndEndIsBefore(userId, LocalDateTime.now(), Sort.by("start").descending());
+                bookings = bookingRepository.findByBookerIdAndEndIsBefore(userId, LocalDateTime.now(),
+                        PageRequest.of(from / size, size, Sort.by("start").descending()));
                 break;
             case FUTURE:
-                bookings = bookingRepository.findByBookerIdAndStartIsAfter(userId, LocalDateTime.now(), Sort.by("start").descending());
+                bookings = bookingRepository.findByBookerIdAndStartIsAfter(userId, LocalDateTime.now(),
+                        PageRequest.of(from / size, size, Sort.by("start").descending()));
                 break;
             default:
-                bookings = bookingRepository.findByBookerIdAndStatus(userId, Status.valueOf(state.toString()), Sort.by("start").descending());
+                bookings = bookingRepository.findByBookerIdAndStatus(userId, Status.valueOf(state.toString()),
+                        PageRequest.of(from / size, size, Sort.by("start").descending()));
         }
         return bookings.stream()
                 .map(BookingMapper::mapToBookingOutDto)
@@ -103,25 +111,31 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    public List<BookingOutDto> findAllOwnerBookingsByState(Long ownerId, State state) {
+    public List<BookingOutDto> findAllOwnerBookingsByState(Long ownerId, State state, int from, int size) {
+        checkPageable(from, size);
         //Проверка существования пользователя
         getUser(ownerId);
         List<Booking> bookings;
         switch (state) {
             case ALL:
-                bookings = bookingRepository.findByItemOwnerId(ownerId, Sort.by("start").descending());
+                bookings = bookingRepository.findByItemOwnerId(ownerId,
+                        PageRequest.of(from / size, size, Sort.by("start").descending()));
                 break;
             case CURRENT:
-                bookings = bookingRepository.findByOwnerCurrentBooker(ownerId, LocalDateTime.now(), Sort.by("id").ascending());
+                bookings = bookingRepository.findByOwnerCurrentBooker(ownerId, LocalDateTime.now(),
+                        PageRequest.of(from / size, size, Sort.by("id").ascending()));
                 break;
             case PAST:
-                bookings = bookingRepository.findByItemOwnerIdAndEndIsBefore(ownerId, LocalDateTime.now(), Sort.by("start").descending());
+                bookings = bookingRepository.findByItemOwnerIdAndEndIsBefore(ownerId, LocalDateTime.now(),
+                        PageRequest.of(from / size, size, Sort.by("start").descending()));
                 break;
             case FUTURE:
-                bookings = bookingRepository.findByItemOwnerIdAndStartIsAfter(ownerId, LocalDateTime.now(), Sort.by("start").descending());
+                bookings = bookingRepository.findByItemOwnerIdAndStartIsAfter(ownerId, LocalDateTime.now(),
+                        PageRequest.of(from / size, size, Sort.by("start").descending()));
                 break;
             default:
-                bookings = bookingRepository.findByItemOwnerIdAndStatus(ownerId, Status.valueOf(state.toString()), Sort.by("start").descending());
+                bookings = bookingRepository.findByItemOwnerIdAndStatus(ownerId, Status.valueOf(state.toString()),
+                        PageRequest.of(from / size, size, Sort.by("start").descending()));
         }
         return bookings.stream()
                 .map(BookingMapper::mapToBookingOutDto)
@@ -148,5 +162,11 @@ public class BookingServiceImpl implements BookingService {
     private Booking getBooking(Long bookingId) {
         return bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new ContentNotFountException("Бранирования с id = " + bookingId + " не существует"));
+    }
+
+    private void checkPageable(int from, int size) {
+        if (from < 0 || size <= 0) {
+            throw new IncorrectParameterException("Проверьте переданные параметры from и size на корректность");
+        }
     }
 }

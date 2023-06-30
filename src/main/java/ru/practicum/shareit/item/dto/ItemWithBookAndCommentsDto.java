@@ -21,7 +21,7 @@ public class ItemWithBookAndCommentsDto {
     @NotNull
     private Boolean available;
     private Long owner;
-    private Long request;
+    private Long requestId;
     @Past
     private BookingIdOutDto lastBooking;
     @Future
