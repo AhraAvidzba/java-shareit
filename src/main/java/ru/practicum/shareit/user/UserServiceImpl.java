@@ -7,9 +7,6 @@ import ru.practicum.shareit.exceptions.ContentNotFountException;
 import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.dto.UserMapper;
 
-import javax.validation.Validation;
-import javax.validation.Validator;
-import javax.validation.ValidatorFactory;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -47,15 +44,15 @@ public class UserServiceImpl implements UserService {
             user.setEmail(userDto.getEmail());
         }
 
-        Optional<User> sameEmailUser = userRepository.getUserByEmail(user.getEmail());
+        Optional<User> sameEmailUser = userRepository.findUserByEmail(user.getEmail());
         if (sameEmailUser.isPresent() && !sameEmailUser.get().getId().equals(user.getId())) {
             throw new ContentAlreadyExistException("Пользователь с таким email уже существует");
         }
 
         //Валидация User
-        ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
-        Validator validator = factory.getValidator();
-        validator.validate(user);
+//        ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
+//        Validator validator = factory.getValidator();
+//        validator.validate(user);
         return UserMapper.toUserDto(userRepository.save(user));
     }
 
