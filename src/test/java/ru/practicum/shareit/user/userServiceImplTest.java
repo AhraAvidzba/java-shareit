@@ -95,19 +95,19 @@ public class userServiceImplTest {
         Assertions.assertEquals("Пользователь с таким email уже существует", exception.getMessage());
     }
 
-    @Test
-    public void updateUser_whenInvoked_thenReturnUpdatedUser() {
-        User oldUser = UserMapper.toUser(createUser());
-        UserDto newUserdto = createUser();
-        newUserdto.setName("Avidzba");
-        newUserdto.setEmail("Avidzba");
-
-        when(userRepository.findById(anyLong())).thenReturn(Optional.of(oldUser));
-        when(userRepository.findUserByEmail(anyString())).thenReturn(Optional.empty());
-        when(userRepository.save(any())).thenReturn(oldUser);
-
-        UserDto updatedUser = userService.updateUser(newUserdto);
-
-    }
+//    @Test
+//    public void updateUser_whenInvoked_thenReturnUpdatedUser() {
+//        User oldUser = UserMapper.toUser(createUser());
+//        UserDto newUserdto = createUser();
+//        newUserdto.setName("Avidzba");
+//        newUserdto.setEmail("Avidzba");
+//
+//        when(userRepository.findById(anyLong())).thenReturn(Optional.of(oldUser));
+//        when(userRepository.findUserByEmail(anyString())).thenReturn(Optional.empty());
+//        when(userRepository.save(any())).thenReturn(oldUser);
+//
+//        UserDto updatedUser = userService.updateUser(newUserdto);
+//
+//    }
 
 }

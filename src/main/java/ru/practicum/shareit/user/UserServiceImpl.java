@@ -7,8 +7,10 @@ import ru.practicum.shareit.exceptions.ContentNotFountException;
 import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.dto.UserMapper;
 
+import javax.validation.*;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -50,9 +52,12 @@ public class UserServiceImpl implements UserService {
         }
 
         //Валидация User
-//        ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
-//        Validator validator = factory.getValidator();
-//        validator.validate(user);
+        ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
+        Validator validator = factory.getValidator();
+        Set<ConstraintViolation<User>> results = validator.validate(user);
+        if (!results.isEmpty()) {
+            throw new ConstraintViolationException(results);
+        }
         return UserMapper.toUserDto(userRepository.save(user));
     }
 
