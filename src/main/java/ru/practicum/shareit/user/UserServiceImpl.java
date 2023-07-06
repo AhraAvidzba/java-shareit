@@ -58,7 +58,8 @@ public class UserServiceImpl implements UserService {
         if (!results.isEmpty()) {
             throw new ConstraintViolationException(results);
         }
-        return UserMapper.toUserDto(userRepository.save(user));
+        User savedUser = userRepository.save(user);
+        return UserMapper.toUserDto(savedUser);
     }
 
     @Override

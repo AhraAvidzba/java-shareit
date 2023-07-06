@@ -1,8 +1,11 @@
 package ru.practicum.shareit.user;
 
+import lombok.SneakyThrows;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -17,7 +20,7 @@ import java.util.Optional;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 public class userServiceImplTest {
@@ -25,6 +28,8 @@ public class userServiceImplTest {
     private UserRepository userRepository;
     @InjectMocks
     private UserServiceImpl userService;
+    @Captor
+    ArgumentCaptor<User> userArgumentCaptor;
 
     private UserDto createUser() {
         UserDto userDto = new UserDto();
@@ -65,6 +70,7 @@ public class userServiceImplTest {
                 ContentNotFountException.class,
                 () -> userService.updateUser(userDto));
 
+        verify(userRepository, never()).save(any());
         Assertions.assertEquals("Пользователь не найден", exception.getMessage());
     }
 
@@ -76,6 +82,7 @@ public class userServiceImplTest {
                 ContentNotFountException.class,
                 () -> userService.updateUser(userDto));
 
+        verify(userRepository, never()).save(any());
         Assertions.assertEquals("Необходимо указать id пользователя", exception.getMessage());
     }
 
@@ -92,22 +99,28 @@ public class userServiceImplTest {
                 ContentAlreadyExistException.class,
                 () -> userService.updateUser(userDto));
 
+        verify(userRepository, never()).save(any());
         Assertions.assertEquals("Пользователь с таким email уже существует", exception.getMessage());
     }
 
-//    @Test
-//    public void updateUser_whenInvoked_thenReturnUpdatedUser() {
-//        User oldUser = UserMapper.toUser(createUser());
-//        UserDto newUserdto = createUser();
-//        newUserdto.setName("Avidzba");
-//        newUserdto.setEmail("Avidzba");
-//
-//        when(userRepository.findById(anyLong())).thenReturn(Optional.of(oldUser));
-//        when(userRepository.findUserByEmail(anyString())).thenReturn(Optional.empty());
-//        when(userRepository.save(any())).thenReturn(oldUser);
-//
-//        UserDto updatedUser = userService.updateUser(newUserdto);
-//
-//    }
+    @Test
+    public void updateUser_whenUserFoundWithoutEmailDuplicate_thenReturnUpdatedUser() {
+        UserDto oldUserDto = createUser();
+        User oldUser = UserMapper.toUser(oldUserDto);
+        UserDto newUserDto = createUser();
+        newUserDto.setName("Anri");
+        User newUser = UserMapper.toUser(newUserDto);
+
+        when(userRepository.findById(anyLong())).thenReturn(Optional.of(oldUser));
+        when(userRepository.findUserByEmail(anyString())).thenReturn(Optional.empty());
+        when(userRepository.save(any())).thenReturn(new User());
+
+        userService.updateUser(newUserDto);
+        verify(userRepository).save(userArgumentCaptor.capture());
+        User savedUser = userArgumentCaptor.getValue();
+
+        assertThat(savedUser.getEmail(), equalTo(oldUserDto.getEmail()));
+        assertThat(savedUser.getName(), equalTo(newUser.getName()));
+    }
 
 }
