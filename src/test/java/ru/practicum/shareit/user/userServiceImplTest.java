@@ -1,19 +1,16 @@
 package ru.practicum.shareit.user;
 
-import lombok.SneakyThrows;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
+import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
 import ru.practicum.shareit.exceptions.ContentAlreadyExistException;
 import ru.practicum.shareit.exceptions.ContentNotFountException;
 import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.dto.UserMapper;
 
+import javax.validation.ConstraintViolationException;
 import java.util.List;
 import java.util.Optional;
 
@@ -56,9 +53,7 @@ public class userServiceImplTest {
 
         when(userRepository.save(any())).thenReturn(UserMapper.toUser(userDto));
 
-        assertThat(userService.saveUser(userDto).getId(), equalTo(userDto.getId()));
-        assertThat(userService.saveUser(userDto).getName(), equalTo(userDto.getName()));
-        assertThat(userService.saveUser(userDto).getEmail(), equalTo(userDto.getEmail()));
+        assertThat(userService.saveUser(userDto), equalTo(userDto));
     }
 
     @Test
@@ -116,11 +111,71 @@ public class userServiceImplTest {
         when(userRepository.save(any())).thenReturn(new User());
 
         userService.updateUser(newUserDto);
-        verify(userRepository).save(userArgumentCaptor.capture());
+
+        InOrder inOrder = inOrder(userRepository);
+        inOrder.verify(userRepository, times(1)).findById(any());
+        inOrder.verify(userRepository, times(1)).save(userArgumentCaptor.capture());
         User savedUser = userArgumentCaptor.getValue();
 
         assertThat(savedUser.getEmail(), equalTo(oldUserDto.getEmail()));
         assertThat(savedUser.getName(), equalTo(newUser.getName()));
     }
 
+    @Test
+    public void updateUser_whenUserIsNotValid_thenConstraintViolationExceptionThrown() {
+        UserDto userDto = createUser();
+        userDto.setEmail("notValidEmail");
+        User user = UserMapper.toUser(userDto);
+
+
+        when(userRepository.findById(anyLong())).thenReturn(Optional.of(user));
+        when(userRepository.findUserByEmail(anyString())).thenReturn(Optional.empty());
+
+        Assertions.assertThrows(
+                ConstraintViolationException.class,
+                () -> userService.updateUser(userDto));
+
+        verify(userRepository, never()).save(any());
+    }
+
+    @Test
+    public void getUserById_whenUserFound_thenReturnUser() {
+        UserDto userDto = createUser();
+        User user = UserMapper.toUser(userDto);
+
+        when(userRepository.findById(any())).thenReturn(Optional.of(user));
+
+        UserDto returnedUserDto = userService.getUserById(userDto.getId());
+        assertThat(returnedUserDto, equalTo(userDto));
+    }
+
+    @Test
+    public void getUserById_whenUserNotFound_thenContentNotFountExceptionThrown() {
+        when(userRepository.findById(any())).thenReturn(Optional.empty());
+
+        Assertions.assertThrows(
+                ContentNotFountException.class,
+                () -> userService.getUserById(any()));
+    }
+
+    @Test
+    public void deleteUser_whenUserFound_thenInvokeDeleteUser() {
+        UserDto userDto = createUser();
+        User user = UserMapper.toUser(userDto);
+
+        when(userRepository.findById(any())).thenReturn(Optional.of(user));
+
+        userService.deleteUser(any());
+        verify(userRepository, times(1)).deleteById(any());
+    }
+
+    @Test
+    public void deleteUser_whenUserNotFound_thenContentNotFoundExceptionThrown() {
+        when(userRepository.findById(any())).thenReturn(Optional.empty());
+
+        Assertions.assertThrows(
+                ContentNotFountException.class,
+                () -> userService.deleteUser(any()));
+        verify(userRepository, never()).deleteById(any());
+    }
 }
