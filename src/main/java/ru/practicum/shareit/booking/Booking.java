@@ -1,5 +1,6 @@
 package ru.practicum.shareit.booking;
 
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -16,6 +17,7 @@ import java.time.LocalDateTime;
 @ToString
 @Getter
 @Setter
+@EqualsAndHashCode
 public class Booking {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

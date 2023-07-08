@@ -53,7 +53,9 @@ public class userServiceImplTest {
 
         when(userRepository.save(any())).thenReturn(UserMapper.toUser(userDto));
 
-        assertThat(userService.saveUser(userDto), equalTo(userDto));
+        UserDto savedUserDto = userService.saveUser(userDto);
+        verify(userRepository, times(1)).save(any());
+        assertThat(savedUserDto, equalTo(userDto));
     }
 
     @Test

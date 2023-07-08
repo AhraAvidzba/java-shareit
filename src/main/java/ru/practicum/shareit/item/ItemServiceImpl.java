@@ -17,9 +17,7 @@ import ru.practicum.shareit.item.dto.*;
 import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.user.UserRepository;
 
-import javax.validation.Validation;
-import javax.validation.Validator;
-import javax.validation.ValidatorFactory;
+import javax.validation.*;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -65,7 +63,10 @@ public class ItemServiceImpl implements ItemService {
         //Валидация Item
         ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
         Validator validator = factory.getValidator();
-        validator.validate(item);
+        Set<ConstraintViolation<Item>> results = validator.validate(item);
+        if (!results.isEmpty()) {
+            throw new ConstraintViolationException(results);
+        }
         return ItemMapper.toItemDto(itemRepository.save(item));
     }
 
