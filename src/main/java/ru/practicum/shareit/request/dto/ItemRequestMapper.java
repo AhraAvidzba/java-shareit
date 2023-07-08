@@ -34,4 +34,13 @@ public class ItemRequestMapper {
         return itemRequestOutDto;
     }
 
+    public static ItemRequestInDto mapToItemRequestInDto(ItemRequest itemRequest) {
+        ItemRequestInDto itemRequestInDto = new ItemRequestInDto();
+        itemRequestInDto.setId(itemRequest.getId());
+        itemRequestInDto.setCreated(itemRequest.getCreated());
+        itemRequestInDto.setUserId(itemRequest.getRequester().getId());
+        itemRequestInDto.setDescription(itemRequest.getDescription());
+        return itemRequestInDto;
+    }
+
 }
