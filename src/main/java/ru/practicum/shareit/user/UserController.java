@@ -10,7 +10,6 @@ import ru.practicum.shareit.validations.Update;
 
 import java.util.List;
 
-//@Validated
 @Slf4j
 @RestController
 @RequestMapping(path = "/users")
