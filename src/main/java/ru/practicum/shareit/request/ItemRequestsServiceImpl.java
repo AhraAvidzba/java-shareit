@@ -53,7 +53,7 @@ public class ItemRequestsServiceImpl implements ItemRequestsService {
         }
         checkAndReturnUser(userId);
         List<ItemRequest> requests = itemRequestRepository.findByRequesterIdNot(userId,
-                PageRequest.of(from / size, size, Sort.by("created").descending()));
+                PageRequest.of(from, size, Sort.by("created").descending()));
         List<Item> items = itemRepository.findAllByRequestIdIn(requests.stream().map(ItemRequest::getId).collect(Collectors.toList()));
         return getItemRequests(requests, items);
     }

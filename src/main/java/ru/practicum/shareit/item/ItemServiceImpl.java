@@ -91,7 +91,7 @@ public class ItemServiceImpl implements ItemService {
                 .orElseThrow(() -> new ContentNotFountException("Пользователь не найден"));
         LocalDateTime targetDate = LocalDateTime.now();
         List<Item> items = itemRepository.findAllByOwnerId(userId,
-                PageRequest.of(from / size, size, Sort.by("id").ascending()));
+                PageRequest.of(from, size, Sort.by("id").ascending()));
         HashMap<Long, BookingIdOutDto> itemLastBookings = getLastBookings(items.stream()
                 .map(Item::getId).collect(Collectors.toList()), userId, targetDate);
         HashMap<Long, BookingIdOutDto> itemNextBookings = getNextBookings(items.stream()
@@ -117,7 +117,7 @@ public class ItemServiceImpl implements ItemService {
             return Collections.emptyList();
         }
         return itemRepository.findAllByNameOrDescription(text,
-                        PageRequest.of(from / size, size, Sort.by("id").ascending())).stream()
+                        PageRequest.of(from, size, Sort.by("id").ascending())).stream()
                 .map(ItemMapper::toItemDto)
                 .collect(Collectors.toList());
     }

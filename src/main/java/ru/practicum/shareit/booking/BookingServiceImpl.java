@@ -80,30 +80,32 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     public List<BookingOutDto> findAllBookingsByState(Long userId, State state, int from, int size) {
+        //Просмотр пользователем всех его букингов (то что он забронировал у других пользователей)
         checkPageable(from, size);
         //Проверка существования пользователя
         getUser(userId);
         List<Booking> bookings;
         switch (state) {
             case ALL:
+                //тут в тестах постман запрашивается порядковый номер элемента а не страницы потому page = from / size
                 bookings = bookingRepository.findByBookerId(userId,
                         PageRequest.of(from / size, size, Sort.by("start").descending()));
                 break;
             case CURRENT:
                 bookings = bookingRepository.findByCurrentBooker(userId, LocalDateTime.now(),
-                        PageRequest.of(from / size, size, Sort.by("id").ascending()));
+                        PageRequest.of(from, size, Sort.by("id").ascending()));
                 break;
             case PAST:
                 bookings = bookingRepository.findByBookerIdAndEndIsBefore(userId, LocalDateTime.now(),
-                        PageRequest.of(from / size, size, Sort.by("start").descending()));
+                        PageRequest.of(from, size, Sort.by("start").descending()));
                 break;
             case FUTURE:
                 bookings = bookingRepository.findByBookerIdAndStartIsAfter(userId, LocalDateTime.now(),
-                        PageRequest.of(from / size, size, Sort.by("start").descending()));
+                        PageRequest.of(from, size, Sort.by("start").descending()));
                 break;
             default:
                 bookings = bookingRepository.findByBookerIdAndStatus(userId, Status.valueOf(state.toString()),
-                        PageRequest.of(from / size, size, Sort.by("start").descending()));
+                        PageRequest.of(from, size, Sort.by("start").descending()));
         }
         return bookings.stream()
                 .map(BookingMapper::mapToBookingOutDto)
@@ -112,6 +114,7 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     public List<BookingOutDto> findAllOwnerBookingsByState(Long ownerId, State state, int from, int size) {
+        //Просмотр владельцем вещей всех букингов этих вещей
         checkPageable(from, size);
         //Проверка существования пользователя
         getUser(ownerId);
@@ -119,23 +122,23 @@ public class BookingServiceImpl implements BookingService {
         switch (state) {
             case ALL:
                 bookings = bookingRepository.findByItemOwnerId(ownerId,
-                        PageRequest.of(from / size, size, Sort.by("start").descending()));
+                        PageRequest.of(from, size, Sort.by("start").descending()));
                 break;
             case CURRENT:
                 bookings = bookingRepository.findByOwnerCurrentBooker(ownerId, LocalDateTime.now(),
-                        PageRequest.of(from / size, size, Sort.by("id").ascending()));
+                        PageRequest.of(from, size, Sort.by("id").ascending()));
                 break;
             case PAST:
                 bookings = bookingRepository.findByItemOwnerIdAndEndIsBefore(ownerId, LocalDateTime.now(),
-                        PageRequest.of(from / size, size, Sort.by("start").descending()));
+                        PageRequest.of(from, size, Sort.by("start").descending()));
                 break;
             case FUTURE:
                 bookings = bookingRepository.findByItemOwnerIdAndStartIsAfter(ownerId, LocalDateTime.now(),
-                        PageRequest.of(from / size, size, Sort.by("start").descending()));
+                        PageRequest.of(from, size, Sort.by("start").descending()));
                 break;
             default:
                 bookings = bookingRepository.findByItemOwnerIdAndStatus(ownerId, Status.valueOf(state.toString()),
-                        PageRequest.of(from / size, size, Sort.by("start").descending()));
+                        PageRequest.of(from, size, Sort.by("start").descending()));
         }
         return bookings.stream()
                 .map(BookingMapper::mapToBookingOutDto)
