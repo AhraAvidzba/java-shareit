@@ -98,8 +98,6 @@ class UserControllerTest {
     @Test
     void saveUser_whenUserIsNotValid_thenMethodArgumentNotValidExceptionThrown() {
         userDto.setEmail("notValidEmail");
-        when(userService.saveUser(any()))
-                .thenReturn(userDto);
 
         mvc.perform(post("/users")
                         .content(mapper.writeValueAsString(userDto))

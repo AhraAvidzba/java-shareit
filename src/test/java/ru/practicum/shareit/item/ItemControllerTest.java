@@ -16,14 +16,14 @@ import ru.practicum.shareit.item.dto.ItemMapper;
 import ru.practicum.shareit.user.User;
 
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
 import java.util.List;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.Mockito.when;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -41,6 +41,8 @@ class ItemControllerTest {
 
     private ItemDto itemDto;
 
+    private CommentDto commentDto;
+
     @BeforeEach
     void setUp() {
         itemDto = new ItemDto();
@@ -50,6 +52,28 @@ class ItemControllerTest {
         itemDto.setAvailable(true);
         itemDto.setId(1L);
         itemDto.setRequestId(null);
+
+        commentDto = new CommentDto();
+        commentDto.setAuthorName("Akhra");
+        commentDto.setText("отлично!");
+        commentDto.setId(1L);
+        commentDto.setCreated(LocalDateTime.now());
+    }
+
+    @SneakyThrows
+    @Test
+    void saveItem_whenItemIsNotValid_thenMethodArgumentNotValidExceptionThrown() {
+        itemDto.setAvailable(null);
+
+        mvc.perform(post("/items")
+                        .content(mapper.writeValueAsString(itemDto))
+                        .characterEncoding(StandardCharsets.UTF_8)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header("X-Sharer-User-Id", 1)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest());
+
+        verify(itemService, never()).saveItem(any(), any());
     }
 
     @SneakyThrows
@@ -107,6 +131,7 @@ class ItemControllerTest {
                         .header("X-Sharer-User-Id", 1)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id", is(itemDto.getId()), Long.class))
                 .andExpect(jsonPath("$.name", is(itemDto.getName())))
                 .andExpect(jsonPath("$.description", is(itemDto.getDescription())));
     }
@@ -114,15 +139,75 @@ class ItemControllerTest {
     @SneakyThrows
     @Test
     void getItemsOfUser() {
+        when(itemService.getItemsOfUser(anyLong(), anyInt(), anyInt()))
+                .thenReturn(List.of(ItemMapper.toItemWithBookAndCommentsDto(
+                        ItemMapper.toItem(itemDto, new User()),
+                        new BookingIdOutDto(),
+                        new BookingIdOutDto(),
+                        List.of(new CommentDto()))));
+
+        mvc.perform(get("/items")
+                        .characterEncoding(StandardCharsets.UTF_8)
+                        .header("X-Sharer-User-Id", 1)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].id", is(itemDto.getId()), Long.class))
+                .andExpect(jsonPath("$[0].name", is(itemDto.getName())))
+                .andExpect(jsonPath("$[0].description", is(itemDto.getDescription())));
     }
 
     @SneakyThrows
     @Test
     void searchItems() {
+        when(itemService.searchItems(anyString(), anyInt(), anyInt()))
+                .thenReturn(List.of(itemDto));
+
+        mvc.perform(get("/items/search?text={}:from={}:size={}", "ерт", "0", "10")
+                        .characterEncoding(StandardCharsets.UTF_8)
+                        .header("X-Sharer-User-Id", 1)
+                        .param("text", "ерт", "from", "0", "size", "10")
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].id", is(itemDto.getId()), Long.class))
+                .andExpect(jsonPath("$[0].name", is(itemDto.getName())))
+                .andExpect(jsonPath("$[0].description", is(itemDto.getDescription())));
+    }
+
+    @SneakyThrows
+    @Test
+    void saveComment_whenCommentIsNotValid_thenMethodArgumentNotValidExceptionThrown() {
+        commentDto.setText("   ");
+
+        mvc.perform(post("/items/{itemId}/comment", 1L)
+                        .content(mapper.writeValueAsString(commentDto))
+                        .characterEncoding(StandardCharsets.UTF_8)
+                        .contentType(MediaType.APPLICATION_JSON)
+
+                        .header("X-Sharer-User-Id", 1)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest());
+
+        verify(itemService, never()).saveComment(any());
     }
 
     @SneakyThrows
     @Test
     void saveComment() {
+        when(itemService.saveComment(any()))
+                .thenReturn(commentDto);
+
+        String savedComment = mvc.perform(post("/items/{itemId}/comment", 1L)
+                        .content(mapper.writeValueAsString(commentDto))
+                        .characterEncoding(StandardCharsets.UTF_8)
+                        .contentType(MediaType.APPLICATION_JSON)
+
+                        .header("X-Sharer-User-Id", 1)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andReturn()
+                .getResponse()
+                .getContentAsString(StandardCharsets.UTF_8);
+
+        assertThat(mapper.writeValueAsString(commentDto), equalTo(savedComment));
     }
 }
