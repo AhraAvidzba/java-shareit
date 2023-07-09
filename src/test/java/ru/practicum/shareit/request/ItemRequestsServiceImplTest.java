@@ -63,7 +63,7 @@ class ItemRequestsServiceImplTest {
         ItemRequest itemRequest = new ItemRequest();
         itemRequest.setCreated(LocalDateTime.now());
         itemRequest.setRequester(createUser());
-        itemRequest.setDescription("нуже пылесос");
+        itemRequest.setDescription("нужен пылесос");
         itemRequest.setId(1L);
         return itemRequest;
     }
