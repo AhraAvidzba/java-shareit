@@ -23,7 +23,7 @@ import static org.hamcrest.Matchers.*;
         properties = "spring.datasource.url=jdbc:h2:mem:shareit",
         webEnvironment = SpringBootTest.WebEnvironment.NONE)
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
-class ItemRequestsServiceImplIT {
+class ItemRequestsServiceImplIntegrationTest {
     private final UserService userService;
     private final ItemRequestsService itemRequestsService;
 

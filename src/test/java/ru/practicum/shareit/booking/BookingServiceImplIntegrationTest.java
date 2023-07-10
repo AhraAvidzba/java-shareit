@@ -29,7 +29,7 @@ import static org.hamcrest.Matchers.hasSize;
         properties = "spring.datasource.url=jdbc:h2:mem:shareit",
         webEnvironment = SpringBootTest.WebEnvironment.NONE)
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
-class BookingServiceImplIT {
+class BookingServiceImplIntegrationTest {
     private final BookingService bookingService;
     private final UserService userService;
     private final ItemService itemService;
