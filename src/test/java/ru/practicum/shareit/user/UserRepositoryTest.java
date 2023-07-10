@@ -12,7 +12,7 @@ import static org.hamcrest.Matchers.equalTo;
 @DataJpaTest(properties = "spring.datasource.url=jdbc:h2:mem:shareit")
 @Transactional
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
-class UserRepositoryIT {
+class UserRepositoryTest {
     private final UserRepository userRepository;
 
     @Test
