@@ -31,7 +31,7 @@ class ItemServiceImplIT {
     @SneakyThrows
     @Test
     void getItemsOfUser() {
-        UserDto savedUser = userService.saveUser(UserMapper.toUserDto(createUser("Akhra", "akhra@yandex.ru")));
+        UserDto savedUser = userService.saveUser(UserMapper.toUserDto(makeUser("Akhra", "akhra@yandex.ru")));
 
         List<Item> sourceItems = List.of(
                 makeItem("Отвертка", UserMapper.toUser(savedUser)),
@@ -62,7 +62,7 @@ class ItemServiceImplIT {
         return item;
     }
 
-    private User createUser(String name, String Email) {
+    private User makeUser(String name, String Email) {
         User user = new User();
         user.setName(name);
         user.setEmail(Email);
