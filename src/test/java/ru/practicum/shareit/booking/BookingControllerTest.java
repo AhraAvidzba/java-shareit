@@ -188,6 +188,19 @@ class BookingControllerTest {
 
     @SneakyThrows
     @Test
+    void findAllBookingsByState_whenUnknownParameter_thenReturnBadRequestCode() {
+        when(bookingService.findAllBookingsByState(anyLong(), any(), anyInt(), anyInt()))
+                .thenReturn(List.of(bookingOutDto));
+
+        mvc.perform(get("/bookings?state={state}", "PASTT")
+                        .characterEncoding(StandardCharsets.UTF_8)
+                        .header("X-Sharer-User-Id", 1)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest());
+    }
+
+    @SneakyThrows
+    @Test
     void findAllOwnerBookingsByState() {
         when(bookingService.findAllOwnerBookingsByState(anyLong(), any(), anyInt(), anyInt()))
                 .thenReturn(List.of(bookingOutDto));

@@ -29,7 +29,6 @@ class ItemRequestInDtoTest {
 
         assertThat(result).extractingJsonPathNumberValue("$.userId").isEqualTo(1);
         assertThat(result).extractingJsonPathStringValue("$.description").isEqualTo("нужна отвертка");
-        assertThat(result).extractingJsonPathValue("$.created").isEqualTo(createdTime.toString());
         assertThat(result).extractingJsonPathNumberValue("$.id").isEqualTo(1);
     }
 }

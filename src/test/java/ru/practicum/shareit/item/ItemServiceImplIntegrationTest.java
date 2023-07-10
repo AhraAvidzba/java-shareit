@@ -2,10 +2,12 @@ package ru.practicum.shareit.item;
 
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
+import ru.practicum.shareit.exceptions.IncorrectParameterException;
 import ru.practicum.shareit.item.dto.ItemMapper;
 import ru.practicum.shareit.item.dto.ItemWithBookAndCommentsDto;
 import ru.practicum.shareit.user.User;
@@ -50,6 +52,14 @@ class ItemServiceImplIntegrationTest {
             assertThat(targetItem.getId(), notNullValue());
             assertThat(sourceItems, hasItem(hasProperty("name", equalTo(targetItem.getName()))));
         }
+    }
+
+    @SneakyThrows
+    @Test
+    void getItemsOfUser_whenIncorrectParameter_thenIncorrectParameterExceptionThrown() {
+        Assertions.assertThrows(
+                IncorrectParameterException.class,
+                () -> itemService.getItemsOfUser(1L, 0, -5));
     }
 
     private Item makeItem(String itemName, User owner) {

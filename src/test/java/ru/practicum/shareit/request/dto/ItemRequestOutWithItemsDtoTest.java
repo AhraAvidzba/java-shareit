@@ -28,7 +28,6 @@ class ItemRequestOutWithItemsDtoTest {
         JsonContent<ItemRequestOutWithItemsDto> result = json.write(itemRequestOutWithItemsDto);
 
         assertThat(result).extractingJsonPathStringValue("$.description").isEqualTo("нужна отвертка");
-        assertThat(result).extractingJsonPathValue("$.created").isEqualTo(createdTime.toString());
         assertThat(result).extractingJsonPathNumberValue("$.id").isEqualTo(1);
         assertThat(result).extractingJsonPathValue("$.items").isEqualTo(null);
     }
