@@ -382,7 +382,7 @@ class BookingServiceImplTest {
         Booking booking = createBooking();
         when(bookingRepository.findByItemId(anyLong(), any())).thenReturn(List.of(booking));
 
-        List<BookingOutDto> BookingOutDtoList = bookingService.findAllBookingsOfItem(1L);
-        assertThat(booking.getId(), equalTo(BookingOutDtoList.get(0).getId()));
+        List<BookingOutDto> bookingOutDtoList = bookingService.findAllBookingsOfItem(1L);
+        assertThat(booking.getId(), equalTo(bookingOutDtoList.get(0).getId()));
     }
 }

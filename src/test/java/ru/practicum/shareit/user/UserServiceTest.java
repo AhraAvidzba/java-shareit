@@ -20,7 +20,7 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-public class userServiceImplTest {
+public class UserServiceTest {
     @Mock
     private UserRepository userRepository;
     @InjectMocks
