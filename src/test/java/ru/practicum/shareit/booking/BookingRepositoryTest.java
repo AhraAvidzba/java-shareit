@@ -27,7 +27,7 @@ class BookingRepositoryTest {
     private final UserRepository userRepository;
     private final BookingRepository bookingRepository;
 
-    List<Booking> savedBookings;
+    private List<Booking> savedBookings;
 
     @BeforeEach
     void fillDB() {
@@ -55,29 +55,32 @@ class BookingRepositoryTest {
 
     @Test
     void findByCurrentBooker() {
+        //when
         List<Booking> returnedBookings = bookingRepository.findByCurrentBooker(savedBookings.get(0).getBooker().getId(),
                 LocalDateTime.now().plusDays(3),
                 PageRequest.of(0, 10, Sort.by("id").ascending()));
-
+        //then
         assertThat(List.of(savedBookings.get(1)), equalTo(returnedBookings));
 
     }
 
     @Test
     void findByOwnerCurrentBooker() {
+        //when
         List<Booking> returnedBookings = bookingRepository.findByOwnerCurrentBooker(savedBookings.get(2).getItem().getOwner().getId(),
                 LocalDateTime.now().plusDays(3),
                 PageRequest.of(0, 10, Sort.by("id").ascending()));
-
+        //then
         assertThat(List.of(savedBookings.get(2)), equalTo(returnedBookings));
     }
 
     @Test
     void findTimeCrossingBookings() {
+        //when
         List<Booking> returnedBookings = bookingRepository.findTimeCrossingBookings(savedBookings.get(1).getItem().getId(),
                 LocalDateTime.now().plusDays(1),
                 LocalDateTime.now().plusDays(4));
-
+        //then
         assertThat(List.of(savedBookings.get(1)), equalTo(returnedBookings));
     }
 

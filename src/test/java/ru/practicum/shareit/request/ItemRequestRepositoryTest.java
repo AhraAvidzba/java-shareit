@@ -23,7 +23,7 @@ class ItemRequestRepositoryTest {
     private final ItemRequestRepository itemRequestRepository;
     private final UserRepository userRepository;
 
-    List<ItemRequest> savedRequests;
+    private List<ItemRequest> savedRequests;
 
     @BeforeEach
     void fillDB() {
@@ -38,8 +38,10 @@ class ItemRequestRepositoryTest {
 
     @Test
     void findByRequesterId() {
+        //when
         List<ItemRequest> returnedRequest = itemRequestRepository.findByRequesterId(savedRequests.get(0).getRequester().getId(),
                 Sort.by("created").descending());
+        //then
         assertThat(List.of(savedRequests.get(1), savedRequests.get(0)), equalTo(returnedRequest));
     }
 

@@ -2,12 +2,10 @@ package ru.practicum.shareit.item;
 
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
-import ru.practicum.shareit.exceptions.IncorrectParameterException;
 import ru.practicum.shareit.item.dto.ItemMapper;
 import ru.practicum.shareit.item.dto.ItemWithBookAndCommentsDto;
 import ru.practicum.shareit.user.User;
@@ -33,33 +31,24 @@ class ItemServiceImplIntegrationTest {
     @SneakyThrows
     @Test
     void getItemsOfUser() {
+        //given
         UserDto savedUser = userService.saveUser(UserMapper.toUserDto(makeUser("Akhra", "akhra@yandex.ru")));
-
         List<Item> sourceItems = List.of(
                 makeItem("Отвертка", UserMapper.toUser(savedUser)),
                 makeItem("Дрель", UserMapper.toUser(savedUser)),
                 makeItem("Пылесос", UserMapper.toUser(savedUser))
         );
-
         sourceItems.forEach(item -> itemService.saveItem(ItemMapper.toItemDto(item), savedUser.getId()));
-
         int pageSize = 2;
+        //when
         List<ItemWithBookAndCommentsDto> targetItems = itemService.getItemsOfUser(savedUser.getId(), 0, pageSize);
-
+        //then
         int min = Integer.min(pageSize, sourceItems.size());
         assertThat(targetItems, hasSize(min));
         for (ItemWithBookAndCommentsDto targetItem : targetItems) {
             assertThat(targetItem.getId(), notNullValue());
             assertThat(sourceItems, hasItem(hasProperty("name", equalTo(targetItem.getName()))));
         }
-    }
-
-    @SneakyThrows
-    @Test
-    void getItemsOfUser_whenIncorrectParameter_thenIncorrectParameterExceptionThrown() {
-        Assertions.assertThrows(
-                IncorrectParameterException.class,
-                () -> itemService.getItemsOfUser(1L, 0, -5));
     }
 
     private Item makeItem(String itemName, User owner) {

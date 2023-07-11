@@ -1,6 +1,7 @@
 package ru.practicum.shareit.booking;
 
 import lombok.RequiredArgsConstructor;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -34,9 +35,10 @@ class BookingServiceImplIntegrationTest {
     private final UserService userService;
     private final ItemService itemService;
 
+    private List<BookingOutDto> savedBookings;
 
-    @Test
-    void findAllBookingsByState() {
+    @BeforeEach
+    void fillDB() {
         UserDto savedUser1 = userService.saveUser(UserMapper.toUserDto(maketeUser("Akhra", "akhra@yandex.ru")));
         UserDto savedUser2 = userService.saveUser(UserMapper.toUserDto(maketeUser("Anri", "anri@yandex.ru")));
         Item item = makeItem("Отвертка", UserMapper.toUser(savedUser1));
@@ -45,12 +47,41 @@ class BookingServiceImplIntegrationTest {
         Booking booking = makeBooking(item, UserMapper.toUser(savedUser2));
         BookingOutDto savedBooking = bookingService.saveBooking(BookingMapper.mapToBookingInDto(booking));
         booking.setId(savedBooking.getId());
+        savedBookings = List.of(savedBooking);
+    }
 
-        List<BookingOutDto> targetBookings = bookingService.findAllBookingsByState(savedUser2.getId(), State.ALL, 0, 10);
+    @Test
+    void setStatus() {
+        //given
+        Long bookingId = savedBookings.get(0).getId();
+        Long itemOwnerId = savedBookings.get(0).getItem().getOwner().getId();
+        //when
+        BookingOutDto returnedBooking = bookingService.setStatus(bookingId, itemOwnerId, true);
+        //then
+        assertThat(savedBookings.get(0).getStatus(), equalTo(Status.WAITING));
+        assertThat(returnedBooking.getStatus(), equalTo(Status.APPROVED));
+    }
 
-        assertThat(targetBookings, hasSize(1));
-        assertThat(targetBookings.get(0).getId(), notNullValue());
-        assertThat(savedBooking, equalTo(targetBookings.get(0)));
+    @Test
+    void findAllBookingsByState() {
+        //given
+        Long targetId = savedBookings.get(0).getBooker().getId();
+        //when
+        List<BookingOutDto> returnedBookings = bookingService.findAllBookingsByState(targetId, State.ALL, 0, 10);
+        //then
+        assertThat(returnedBookings, hasSize(1));
+        assertThat(returnedBookings.get(0).getId(), notNullValue());
+        assertThat(savedBookings.get(0), equalTo(returnedBookings.get(0)));
+    }
+
+    @Test
+    void findAllBookingsOfItem() {
+        //given
+        Long targetItemId = savedBookings.get(0).getItem().getId();
+        //when
+        List<BookingOutDto> returnedBookings = bookingService.findAllBookingsOfItem(targetItemId);
+        //then
+        assertThat(savedBookings.get(0), equalTo(returnedBookings.get(0)));
     }
 
     private Booking makeBooking(Item item, User booker) {

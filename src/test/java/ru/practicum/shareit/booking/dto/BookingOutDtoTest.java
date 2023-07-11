@@ -18,6 +18,7 @@ class BookingOutDtoTest {
 
     @Test
     void testItemDescriptionDto() throws Exception {
+        //given
         LocalDateTime startTime = LocalDateTime.now().plusDays(1);
         LocalDateTime endTime = LocalDateTime.now().plusDays(2);
 
@@ -28,9 +29,9 @@ class BookingOutDtoTest {
         bookingOutDto.setItem(null);
         bookingOutDto.setBooker(null);
         bookingOutDto.setStatus(Status.APPROVED);
-
+        //when
         JsonContent<BookingOutDto> result = json.write(bookingOutDto);
-
+        //then
         assertThat(result).extractingJsonPathNumberValue("$.id").isEqualTo(1);
         assertThat(result).extractingJsonPathValue("$.item").isEqualTo(null);
         assertThat(result).extractingJsonPathValue("$.booker").isEqualTo(null);

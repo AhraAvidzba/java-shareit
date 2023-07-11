@@ -33,13 +33,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @WebMvcTest(controllers = ItemRequestController.class)
 class ItemRequestControllerTest {
     @Autowired
-    ObjectMapper mapper;
+    private ObjectMapper mapper;
 
     @Autowired
     private MockMvc mvc;
 
     @MockBean
-    ItemRequestsService itemRequestsService;
+    private ItemRequestsService itemRequestsService;
 
     private ItemRequestOutDto itemRequestOutDto;
     private ItemRequestInDto itemRequestInDto;
@@ -82,16 +82,17 @@ class ItemRequestControllerTest {
     @SneakyThrows
     @Test
     void addRequest_whenКуйгуыеIsNotValid_thenMethodArgumentNotValidExceptionThrown() {
+        //given
         itemRequestInDto.setDescription(null);
-
+        //when
         mvc.perform(post("/requests")
                         .content(mapper.writeValueAsString(itemRequestInDto))
                         .characterEncoding(StandardCharsets.UTF_8)
                         .contentType(MediaType.APPLICATION_JSON)
                         .header("X-Sharer-User-Id", 1)
                         .accept(MediaType.APPLICATION_JSON))
+                //then
                 .andExpect(status().isBadRequest());
-
         verify(itemRequestsService, never()).addRequest(any());
     }
 
@@ -100,18 +101,18 @@ class ItemRequestControllerTest {
     void addRequest() {
         when(itemRequestsService.addRequest(any()))
                 .thenReturn(itemRequestOutDto);
-
+        //when
         String savedRequest = mvc.perform(post("/requests")
                         .content(mapper.writeValueAsString(itemRequestInDto))
                         .characterEncoding(StandardCharsets.UTF_8)
                         .contentType(MediaType.APPLICATION_JSON)
                         .header("X-Sharer-User-Id", 1)
                         .accept(MediaType.APPLICATION_JSON))
+                //then
                 .andExpect(status().isOk())
                 .andReturn()
                 .getResponse()
                 .getContentAsString(StandardCharsets.UTF_8);
-
         assertThat(mapper.writeValueAsString(itemRequestOutDto), equalTo(savedRequest));
     }
 
@@ -120,11 +121,12 @@ class ItemRequestControllerTest {
     void getAllUserRequests() {
         when(itemRequestsService.getAllUserRequests(anyLong()))
                 .thenReturn(List.of(itemRequestOutWithItemsDto));
-
+        //when
         String requests = mvc.perform(get("/requests")
                         .characterEncoding(StandardCharsets.UTF_8)
                         .header("X-Sharer-User-Id", 1)
                         .accept(MediaType.APPLICATION_JSON))
+                //then
                 .andExpect(status().isOk())
                 .andReturn()
                 .getResponse()
@@ -137,11 +139,12 @@ class ItemRequestControllerTest {
     void getAllRequests() {
         when(itemRequestsService.getAllRequests(anyLong(), anyInt(), anyInt()))
                 .thenReturn(List.of(itemRequestOutWithItemsDto));
-
+        //when
         String requests = mvc.perform(get("/requests/all")
                         .characterEncoding(StandardCharsets.UTF_8)
                         .header("X-Sharer-User-Id", 1)
                         .accept(MediaType.APPLICATION_JSON))
+                //then
                 .andExpect(status().isOk())
                 .andReturn()
                 .getResponse()
@@ -154,11 +157,12 @@ class ItemRequestControllerTest {
     void getRequestById() {
         when(itemRequestsService.getRequestById(anyLong(), anyLong()))
                 .thenReturn(itemRequestOutWithItemsDto);
-
+        //when
         String request = mvc.perform(get("/requests/{requestId}", 1)
                         .characterEncoding(StandardCharsets.UTF_8)
                         .header("X-Sharer-User-Id", 1)
                         .accept(MediaType.APPLICATION_JSON))
+                //then
                 .andExpect(status().isOk())
                 .andReturn()
                 .getResponse()
@@ -169,11 +173,12 @@ class ItemRequestControllerTest {
     @SneakyThrows
     @Test
     void getRequestById_whenIllegalId_thenMethodArgumentTypeMismatchExceptionThrown() {
-
+        //when
         mvc.perform(get("/requests/{requestId}", "id")
                         .characterEncoding(StandardCharsets.UTF_8)
                         .header("X-Sharer-User-Id", 1)
                         .accept(MediaType.APPLICATION_JSON))
+                //then
                 .andExpect(status().isBadRequest());
     }
 }

@@ -2,18 +2,21 @@ package ru.practicum.shareit.item;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.item.dto.CommentDto;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.dto.ItemWithBookAndCommentsDto;
 
 import javax.validation.Valid;
+import javax.validation.constraints.Min;
 import java.util.List;
 
 @Slf4j
 @RestController
 @RequestMapping("/items")
 @RequiredArgsConstructor
+@Validated
 public class ItemController {
     private final ItemService itemService;
 
@@ -44,16 +47,16 @@ public class ItemController {
 
     @GetMapping
     public List<ItemWithBookAndCommentsDto> getItemsOfUser(@RequestHeader("X-Sharer-User-Id") Long userId,
-                                                           @RequestParam(name = "from", defaultValue = "0") int from,
-                                                           @RequestParam(name = "size", defaultValue = "10") int size) {
+                                                           @RequestParam(name = "from", defaultValue = "0") @Min(0) int from,
+                                                           @RequestParam(name = "size", defaultValue = "10") @Min(0) int size) {
         log.info("Возвращен список вещей пользователя с id = {}", userId);
         return itemService.getItemsOfUser(userId, from, size);
     }
 
     @GetMapping("/search")
     public List<ItemDto> searchItems(@RequestParam(name = "text") String text,
-                                     @RequestParam(name = "from", defaultValue = "0") int from,
-                                     @RequestParam(name = "size", defaultValue = "10") int size) {
+                                     @RequestParam(name = "from", defaultValue = "0") @Min(0) int from,
+                                     @RequestParam(name = "size", defaultValue = "10") @Min(0) int size) {
         log.info("Возвращен список всех вещей содеражащих в названии либо описании текст: {} ", text);
         return itemService.searchItems(text, from, size);
     }

@@ -15,6 +15,7 @@ class ItemWithBookAndCommentsDtoTest {
 
     @Test
     void testItemDescriptionDto() throws Exception {
+        //given
         ItemWithBookAndCommentsDto itemWithBookAndCommentsDto = new ItemWithBookAndCommentsDto();
         itemWithBookAndCommentsDto.setId(1L);
         itemWithBookAndCommentsDto.setName("отвертка");
@@ -25,9 +26,9 @@ class ItemWithBookAndCommentsDtoTest {
         itemWithBookAndCommentsDto.setLastBooking(null);
         itemWithBookAndCommentsDto.setNextBooking(null);
         itemWithBookAndCommentsDto.setComments(null);
-
+        //when
         JsonContent<ItemWithBookAndCommentsDto> result = json.write(itemWithBookAndCommentsDto);
-
+        //then
         assertThat(result).extractingJsonPathNumberValue("$.id").isEqualTo(1);
         assertThat(result).extractingJsonPathStringValue("$.name").isEqualTo("отвертка");
         assertThat(result).extractingJsonPathStringValue("$.description").isEqualTo("крестовая");

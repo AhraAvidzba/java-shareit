@@ -17,12 +17,14 @@ class UserRepositoryTest {
 
     @Test
     void findUserByEmail() {
+        //given
         userRepository.save(User.builder()
                 .email("akhra@yandex.ru")
                 .name("Akhra")
                 .build());
-
+        //when
         User savedUser = userRepository.findUserByEmail("akhra@yandex.ru").get();
+        //then
         assertThat("akhra@yandex.ru", equalTo(savedUser.getEmail()));
     }
 }

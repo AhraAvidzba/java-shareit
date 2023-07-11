@@ -23,7 +23,7 @@ class ItemRepositoryTest {
     private final ItemRepository itemRepository;
     private final UserRepository userRepository;
 
-    List<Item> items;
+    private List<Item> items;
 
     @BeforeEach
     void fillDB() {
@@ -36,11 +36,12 @@ class ItemRepositoryTest {
 
     @Test
     void findAllByNameOrDescription() {
+        //when
         List<Item> items1 = itemRepository.findAllByNameOrDescription("лЕс",
                 PageRequest.of(0, 10, Sort.by("id").ascending()));
         List<Item> items2 = itemRepository.findAllByNameOrDescription("ТОв",
                 PageRequest.of(0, 10, Sort.by("id").ascending()));
-
+        //then
         assertThat(List.of(items.get(1), items.get(2)), equalTo(items1));
         assertThat(List.of(items.get(0)), equalTo(items2));
 

@@ -22,16 +22,16 @@ class UserServiceImplIntegrationTest {
 
     @Test
     void getAllUsers() {
+        //given
         List<UserDto> sourceUsers = List.of(
                 makeUserDto("ivan@email", "Ivan"),
                 makeUserDto("petr@email", "Petr"),
                 makeUserDto("vasilii@email", "Vasilii")
         );
-
         sourceUsers.forEach((userService::saveUser));
-
+        //when
         List<UserDto> targetUsers = userService.getAllUsers();
-
+        //then
         assertThat(targetUsers, hasSize(sourceUsers.size()));
         for (UserDto sourceUser : sourceUsers) {
             assertThat(targetUsers, hasItem(allOf(

@@ -16,15 +16,16 @@ class CommentDtoTest {
 
     @Test
     void testCommentDto() throws Exception {
+        //given
         CommentDto commentDto = new CommentDto();
         commentDto.setId(1L);
         commentDto.setText("отлично");
         commentDto.setItemId(1L);
         commentDto.setUserId(1L);
         commentDto.setAuthorName("Akhra");
-
+        //when
         JsonContent<CommentDto> result = json.write(commentDto);
-
+        //then
         assertThat(result).extractingJsonPathNumberValue("$.id").isEqualTo(1);
         assertThat(result).extractingJsonPathStringValue("$.text").isEqualTo("отлично");
         assertThat(result).extractingJsonPathNumberValue("$.itemId").isEqualTo(1);

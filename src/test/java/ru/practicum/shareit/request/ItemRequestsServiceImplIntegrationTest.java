@@ -29,20 +29,19 @@ class ItemRequestsServiceImplIntegrationTest {
 
     @Test
     void getAllRequests() {
+        //given
         UserDto savedUser1 = userService.saveUser(UserMapper.toUserDto(createUser("Akhra", "akhra@yandex.ru")));
         UserDto savedUser2 = userService.saveUser(UserMapper.toUserDto(createUser("Anri", "anri@yandex.ru")));
-
         List<ItemRequest> sourceRequests = List.of(
                 makeItemRequest("Отвертка", UserMapper.toUser(savedUser1)),
                 makeItemRequest("Дрель", UserMapper.toUser(savedUser1)),
                 makeItemRequest("Пылесос", UserMapper.toUser(savedUser1))
         );
-
         sourceRequests.forEach(request -> itemRequestsService.addRequest(ItemRequestMapper.mapToItemRequestInDto(request)));
-
         int pageSize = 2;
+        //when
         List<ItemRequestOutWithItemsDto> targetRequests = itemRequestsService.getAllRequests(savedUser2.getId(), 0, pageSize);
-
+        //then
         int min = Integer.min(pageSize, sourceRequests.size());
         assertThat(targetRequests, hasSize(min));
         for (ItemRequestOutWithItemsDto targetRequest : targetRequests) {

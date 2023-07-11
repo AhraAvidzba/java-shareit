@@ -25,13 +25,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @WebMvcTest(controllers = UserController.class)
 class UserControllerTest {
     @Autowired
-    ObjectMapper mapper;
+    private ObjectMapper mapper;
 
     @Autowired
     private MockMvc mvc;
 
     @MockBean
-    UserService userService;
+    private UserService userService;
 
     private UserDto userDto;
 
@@ -48,10 +48,11 @@ class UserControllerTest {
     void getAllUsers() {
         when(userService.getAllUsers())
                 .thenReturn(List.of(userDto));
-
+        //when
         mvc.perform(get("/users")
                         .characterEncoding(StandardCharsets.UTF_8)
                         .accept(MediaType.APPLICATION_JSON))
+                //then
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(1)))
                 .andExpect(jsonPath("$[0].id", is(userDto.getId()), Long.class))
@@ -64,10 +65,11 @@ class UserControllerTest {
     void getUserById() {
         when(userService.getUserById(any()))
                 .thenReturn(userDto);
-
+        //when
         String user = mvc.perform(get("/users/{id}", userDto.getId())
                         .characterEncoding(StandardCharsets.UTF_8)
                         .accept(MediaType.APPLICATION_JSON))
+                //then
                 .andExpect(status().isOk())
                 .andReturn()
                 .getResponse()
@@ -80,32 +82,33 @@ class UserControllerTest {
     void saveUser() {
         when(userService.saveUser(any()))
                 .thenReturn(userDto);
-
+        //when
         String savedUser = mvc.perform(post("/users")
                         .content(mapper.writeValueAsString(userDto))
                         .characterEncoding(StandardCharsets.UTF_8)
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
+                //then
                 .andExpect(status().isOk())
                 .andReturn()
                 .getResponse()
                 .getContentAsString();
-
         assertThat(mapper.writeValueAsString(userDto), equalTo(savedUser));
     }
 
     @SneakyThrows
     @Test
     void saveUser_whenUserIsNotValid_thenMethodArgumentNotValidExceptionThrown() {
+        //given
         userDto.setEmail("notValidEmail");
-
+        //when
         mvc.perform(post("/users")
                         .content(mapper.writeValueAsString(userDto))
                         .characterEncoding(StandardCharsets.UTF_8)
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
+                //then
                 .andExpect(status().isBadRequest());
-
         verify(userService, never()).saveUser(any());
     }
 
@@ -114,30 +117,31 @@ class UserControllerTest {
     void updateUser() {
         when(userService.updateUser(any()))
                 .thenReturn(userDto);
-
+        //when
         String savedUser = mvc.perform(patch("/users/{id}", userDto.getId())
                         .content(mapper.writeValueAsString(userDto))
                         .characterEncoding(StandardCharsets.UTF_8)
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
+                //then
                 .andExpect(status().isOk())
                 .andReturn()
                 .getResponse()
                 .getContentAsString();
-
         assertThat(mapper.writeValueAsString(userDto), equalTo(savedUser));
     }
 
     @SneakyThrows
     @Test
     void deleteUser() {
+        //when
         mvc.perform(delete("/users/{id}", userDto.getId())
                         .content(mapper.writeValueAsString(userDto))
                         .characterEncoding(StandardCharsets.UTF_8)
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
+                //then
                 .andExpect(status().isOk());
-
         verify(userService, times(1)).deleteUser(any());
 
     }

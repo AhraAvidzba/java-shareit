@@ -18,15 +18,16 @@ class ItemRequestInDtoTest {
 
     @Test
     void testItemRequestInDto() throws Exception {
+        //given
         LocalDateTime createdTime = LocalDateTime.now();
         ItemRequestInDto itemRequestInDto = new ItemRequestInDto();
         itemRequestInDto.setUserId(1L);
         itemRequestInDto.setDescription("нужна отвертка");
         itemRequestInDto.setCreated(createdTime);
         itemRequestInDto.setId(1L);
-
+        //when
         JsonContent<ItemRequestInDto> result = json.write(itemRequestInDto);
-
+        //then
         assertThat(result).extractingJsonPathNumberValue("$.userId").isEqualTo(1);
         assertThat(result).extractingJsonPathStringValue("$.description").isEqualTo("нужна отвертка");
         assertThat(result).extractingJsonPathNumberValue("$.id").isEqualTo(1);

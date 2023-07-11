@@ -29,13 +29,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @WebMvcTest(controllers = BookingController.class)
 class BookingControllerTest {
     @Autowired
-    ObjectMapper mapper;
+    private ObjectMapper mapper;
 
     @Autowired
     private MockMvc mvc;
 
     @MockBean
-    BookingService bookingService;
+    private BookingService bookingService;
 
     private BookingOutDto bookingOutDto;
 
@@ -59,6 +59,166 @@ class BookingControllerTest {
         bookingInDto = BookingMapper.mapToBookingInDto(booking);
     }
 
+    @SneakyThrows
+    @Test
+    void saveBooking_whenBookingIsNotValid_thenMethodArgumentNotValidExceptionThrown() {
+        //given
+        bookingInDto.setStart(null);
+        //when
+        mvc.perform(post("/bookings")
+                        .content(mapper.writeValueAsString(bookingInDto))
+                        .characterEncoding(StandardCharsets.UTF_8)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header("X-Sharer-User-Id", 1)
+                        .accept(MediaType.APPLICATION_JSON))
+                //then
+                .andExpect(status().isBadRequest());
+        verify(bookingService, never()).saveBooking(any());
+
+    }
+
+    @SneakyThrows
+    @Test
+    void saveBooking() {
+        when(bookingService.saveBooking(any()))
+                .thenReturn(bookingOutDto);
+        //when
+        String savedBooking = mvc.perform(post("/bookings")
+                        .content(mapper.writeValueAsString(bookingInDto))
+                        .characterEncoding(StandardCharsets.UTF_8)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header("X-Sharer-User-Id", 1)
+                        .accept(MediaType.APPLICATION_JSON))
+                //then
+                .andExpect(status().isOk())
+                .andReturn()
+                .getResponse()
+                .getContentAsString(StandardCharsets.UTF_8);
+        assertThat(mapper.writeValueAsString(bookingOutDto), equalTo(savedBooking));
+    }
+
+    @SneakyThrows
+    @Test
+    void setStatus_whenIllegalStatus_thenIllegalArgumentExceptionThrown() {
+        //when
+        mvc.perform(patch("/bookings/{bookingId}?approved={approved}", 1, "да!!")
+                        .content(mapper.writeValueAsString(bookingInDto))
+                        .characterEncoding(StandardCharsets.UTF_8)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header("X-Sharer-User-Id", 1)
+                        .accept(MediaType.APPLICATION_JSON))
+                //then
+                .andExpect(status().isBadRequest());
+        verify(bookingService, never()).setStatus(anyLong(), anyLong(), anyBoolean());
+    }
+
+
+    @SneakyThrows
+    @Test
+    void setStatus() {
+        when(bookingService.setStatus(anyLong(), anyLong(), anyBoolean()))
+                .thenReturn(bookingOutDto);
+        //when
+        String savedBooking = mvc.perform(patch("/bookings/{bookingId}?approved={approved}", 1, "true")
+                        .content(mapper.writeValueAsString(bookingInDto))
+                        .characterEncoding(StandardCharsets.UTF_8)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header("X-Sharer-User-Id", 1)
+                        .accept(MediaType.APPLICATION_JSON))
+                //then
+                .andExpect(status().isOk())
+                .andReturn()
+                .getResponse()
+                .getContentAsString(StandardCharsets.UTF_8);
+        assertThat(mapper.writeValueAsString(bookingOutDto), equalTo(savedBooking));
+    }
+
+    @SneakyThrows
+    @Test
+    void getBooking() {
+        when(bookingService.getBooking(anyLong(), anyLong()))
+                .thenReturn(bookingOutDto);
+        //when
+        String booking = mvc.perform(get("/bookings/{bookingId}", 1L)
+                        .characterEncoding(StandardCharsets.UTF_8)
+                        .header("X-Sharer-User-Id", 1)
+                        .accept(MediaType.APPLICATION_JSON))
+                //then
+                .andExpect(status().isOk())
+                .andReturn()
+                .getResponse()
+                .getContentAsString(StandardCharsets.UTF_8);
+        assertThat(mapper.writeValueAsString(bookingOutDto), equalTo(booking));
+    }
+
+    @SneakyThrows
+    @Test
+    void findAllBookingsByState() {
+        when(bookingService.findAllBookingsByState(anyLong(), any(), anyInt(), anyInt()))
+                .thenReturn(List.of(bookingOutDto));
+        //when
+        String bookings = mvc.perform(get("/bookings")
+                        .characterEncoding(StandardCharsets.UTF_8)
+                        .header("X-Sharer-User-Id", 1)
+                        .accept(MediaType.APPLICATION_JSON))
+                //then
+                .andExpect(status().isOk())
+                .andReturn()
+                .getResponse()
+                .getContentAsString(StandardCharsets.UTF_8);
+        assertThat(mapper.writeValueAsString(List.of(bookingOutDto)), equalTo(bookings));
+    }
+
+    @SneakyThrows
+    @Test
+    void findAllBookingsByState_whenUnknownParameter_thenReturnBadRequestCode() {
+        when(bookingService.findAllBookingsByState(anyLong(), any(), anyInt(), anyInt()))
+                .thenReturn(List.of(bookingOutDto));
+        //when
+        mvc.perform(get("/bookings?state={state}", "PASTT")
+                        .characterEncoding(StandardCharsets.UTF_8)
+                        .header("X-Sharer-User-Id", 1)
+                        .accept(MediaType.APPLICATION_JSON))
+                //then
+                .andExpect(status().isBadRequest());
+    }
+
+    @SneakyThrows
+    @Test
+    void findAllOwnerBookingsByState() {
+        when(bookingService.findAllOwnerBookingsByState(anyLong(), any(), anyInt(), anyInt()))
+                .thenReturn(List.of(bookingOutDto));
+        //when
+        String bookings = mvc.perform(get("/bookings/owner")
+                        .characterEncoding(StandardCharsets.UTF_8)
+                        .header("X-Sharer-User-Id", 1)
+                        .accept(MediaType.APPLICATION_JSON))
+                //then
+                .andExpect(status().isOk())
+                .andReturn()
+                .getResponse()
+                .getContentAsString(StandardCharsets.UTF_8);
+        assertThat(mapper.writeValueAsString(List.of(bookingOutDto)), equalTo(bookings));
+    }
+
+    @SneakyThrows
+    @Test
+    void findAllBookingsOfItem() {
+        when(bookingService.findAllBookingsOfItem(anyLong()))
+                .thenReturn(List.of(bookingOutDto));
+        //when
+        String bookings = mvc.perform(get("/bookings/item/{itemId}", 1L)
+                        .characterEncoding(StandardCharsets.UTF_8)
+                        .header("X-Sharer-User-Id", 1)
+                        .accept(MediaType.APPLICATION_JSON))
+                //then
+                .andExpect(status().isOk())
+                .andReturn()
+                .getResponse()
+                .getContentAsString(StandardCharsets.UTF_8);
+        assertThat(mapper.writeValueAsString(List.of(bookingOutDto)), equalTo(bookings));
+    }
+
     private Item createItem() {
         User user = createUser();
 
@@ -80,156 +240,4 @@ class BookingControllerTest {
         return user;
     }
 
-    @SneakyThrows
-    @Test
-    void saveBooking_whenBookingIsNotValid_thenMethodArgumentNotValidExceptionThrown() {
-        bookingInDto.setStart(null);
-
-        mvc.perform(post("/bookings")
-                        .content(mapper.writeValueAsString(bookingInDto))
-                        .characterEncoding(StandardCharsets.UTF_8)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .header("X-Sharer-User-Id", 1)
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isBadRequest());
-
-        verify(bookingService, never()).saveBooking(any());
-
-    }
-
-    @SneakyThrows
-    @Test
-    void saveBooking() {
-        when(bookingService.saveBooking(any()))
-                .thenReturn(bookingOutDto);
-
-        String savedBooking = mvc.perform(post("/bookings")
-                        .content(mapper.writeValueAsString(bookingInDto))
-                        .characterEncoding(StandardCharsets.UTF_8)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .header("X-Sharer-User-Id", 1)
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andReturn()
-                .getResponse()
-                .getContentAsString(StandardCharsets.UTF_8);
-
-        assertThat(mapper.writeValueAsString(bookingOutDto), equalTo(savedBooking));
-    }
-
-    @SneakyThrows
-    @Test
-    void setStatus_whenIllegalStatus_thenIllegalArgumentExceptionThrown() {
-        mvc.perform(patch("/bookings/{bookingId}?approved={approved}", 1, "да!!")
-                        .content(mapper.writeValueAsString(bookingInDto))
-                        .characterEncoding(StandardCharsets.UTF_8)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .header("X-Sharer-User-Id", 1)
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isBadRequest());
-
-        verify(bookingService, never()).setStatus(anyLong(), anyLong(), anyBoolean());
-    }
-
-
-    @SneakyThrows
-    @Test
-    void setStatus() {
-        when(bookingService.setStatus(anyLong(), anyLong(), anyBoolean()))
-                .thenReturn(bookingOutDto);
-
-        String savedBooking = mvc.perform(patch("/bookings/{bookingId}?approved={approved}", 1, "true")
-                        .content(mapper.writeValueAsString(bookingInDto))
-                        .characterEncoding(StandardCharsets.UTF_8)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .header("X-Sharer-User-Id", 1)
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andReturn()
-                .getResponse()
-                .getContentAsString(StandardCharsets.UTF_8);
-
-        assertThat(mapper.writeValueAsString(bookingOutDto), equalTo(savedBooking));
-    }
-
-    @SneakyThrows
-    @Test
-    void getBooking() {
-        when(bookingService.getBooking(anyLong(), anyLong()))
-                .thenReturn(bookingOutDto);
-
-        String booking = mvc.perform(get("/bookings/{bookingId}", 1L)
-                        .characterEncoding(StandardCharsets.UTF_8)
-                        .header("X-Sharer-User-Id", 1)
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andReturn()
-                .getResponse()
-                .getContentAsString(StandardCharsets.UTF_8);
-        assertThat(mapper.writeValueAsString(bookingOutDto), equalTo(booking));
-    }
-
-    @SneakyThrows
-    @Test
-    void findAllBookingsByState() {
-        when(bookingService.findAllBookingsByState(anyLong(), any(), anyInt(), anyInt()))
-                .thenReturn(List.of(bookingOutDto));
-
-        String bookings = mvc.perform(get("/bookings")
-                        .characterEncoding(StandardCharsets.UTF_8)
-                        .header("X-Sharer-User-Id", 1)
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andReturn()
-                .getResponse()
-                .getContentAsString(StandardCharsets.UTF_8);
-        assertThat(mapper.writeValueAsString(List.of(bookingOutDto)), equalTo(bookings));
-    }
-
-    @SneakyThrows
-    @Test
-    void findAllBookingsByState_whenUnknownParameter_thenReturnBadRequestCode() {
-        when(bookingService.findAllBookingsByState(anyLong(), any(), anyInt(), anyInt()))
-                .thenReturn(List.of(bookingOutDto));
-
-        mvc.perform(get("/bookings?state={state}", "PASTT")
-                        .characterEncoding(StandardCharsets.UTF_8)
-                        .header("X-Sharer-User-Id", 1)
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isBadRequest());
-    }
-
-    @SneakyThrows
-    @Test
-    void findAllOwnerBookingsByState() {
-        when(bookingService.findAllOwnerBookingsByState(anyLong(), any(), anyInt(), anyInt()))
-                .thenReturn(List.of(bookingOutDto));
-
-        String bookings = mvc.perform(get("/bookings/owner")
-                        .characterEncoding(StandardCharsets.UTF_8)
-                        .header("X-Sharer-User-Id", 1)
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andReturn()
-                .getResponse()
-                .getContentAsString(StandardCharsets.UTF_8);
-        assertThat(mapper.writeValueAsString(List.of(bookingOutDto)), equalTo(bookings));
-    }
-
-    @SneakyThrows
-    @Test
-    void findAllBookingsOfItem() {
-        when(bookingService.findAllBookingsOfItem(anyLong()))
-                .thenReturn(List.of(bookingOutDto));
-
-        String bookings = mvc.perform(get("/bookings/item/{itemId}", 1L)
-                        .characterEncoding(StandardCharsets.UTF_8)
-                        .header("X-Sharer-User-Id", 1)
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andReturn()
-                .getResponse()
-                .getContentAsString(StandardCharsets.UTF_8);
-        assertThat(mapper.writeValueAsString(List.of(bookingOutDto)), equalTo(bookings));
-    }
 }

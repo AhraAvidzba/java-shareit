@@ -35,7 +35,7 @@ class ItemRequestsServiceImplTest {
     @Mock
     private ItemRepository itemRepository;
     @InjectMocks
-    ItemRequestsServiceImpl itemRequestsService;
+    private ItemRequestsServiceImpl itemRequestsService;
 
     private User createUser() {
         User user = new User();
@@ -70,23 +70,26 @@ class ItemRequestsServiceImplTest {
 
     @Test
     void addRequest_whenUserNotFound_thenContentNotFountExceptionThrown() {
+        //given
         ItemRequest itemRequest = createRequest();
         when(userRepository.findById(anyLong())).thenReturn(Optional.empty());
-
+        //when
         Assertions.assertThrows(
                 ContentNotFountException.class,
                 () -> itemRequestsService.addRequest(ItemRequestMapper.mapToItemRequestInDto(itemRequest)));
-
+        //then
         verify(itemRequestRepository, never()).save(any());
     }
 
     @Test
     void addRequest_whenUserFound_thenReturnSavedRequest() {
+        //given
         ItemRequest itemRequest = createRequest();
         when(userRepository.findById(anyLong())).thenReturn(Optional.of(itemRequest.getRequester()));
         when(itemRequestRepository.save(any())).thenReturn((itemRequest));
-
+        //when
         ItemRequestOutDto savedRequest = itemRequestsService.addRequest(ItemRequestMapper.mapToItemRequestInDto(itemRequest));
+        //then
         verify(itemRequestRepository, times(1)).save(any());
         assertThat(savedRequest.getId(), equalTo(itemRequest.getId()));
     }
@@ -102,6 +105,7 @@ class ItemRequestsServiceImplTest {
 
     @Test
     void getAllUserRequests_whenUserFound_thenContentNotFountExceptionThrown() {
+        //given
         ItemRequest itemRequest1 = createRequest();
         ItemRequest itemRequest2 = createRequest();
         itemRequest2.setId(2L);
@@ -118,8 +122,9 @@ class ItemRequestsServiceImplTest {
         when(userRepository.findById(anyLong())).thenReturn(Optional.of(itemRequest1.getRequester()));
         when(itemRequestRepository.findByRequesterId(anyLong(), any())).thenReturn(List.of(itemRequest1, itemRequest2));
         when(itemRepository.findAllByRequestIdIn(any())).thenReturn(new ArrayList<>(List.of(item1, item2, item3)));
-
+        //when
         List<ItemRequestOutWithItemsDto> userRequests = itemRequestsService.getAllUserRequests(1L);
+        //then
         assertThat(userRequests.size(), equalTo(2));
         assertThat(userRequests.get(0).getItems().size(), equalTo(2));
         assertThat(userRequests.get(1).getItems().size(), equalTo(1));
@@ -136,6 +141,7 @@ class ItemRequestsServiceImplTest {
 
     @Test
     void getAllRequests_whenUserFound_thenContentNotFountExceptionThrown() {
+        //given
         ItemRequest itemRequest1 = createRequest();
         ItemRequest itemRequest2 = createRequest();
         itemRequest2.setId(2L);
@@ -146,8 +152,9 @@ class ItemRequestsServiceImplTest {
         when(userRepository.findById(anyLong())).thenReturn(Optional.of(itemRequest2.getRequester()));
         when(itemRequestRepository.findByRequesterIdNot(anyLong(), any())).thenReturn(List.of(itemRequest1));
         when(itemRepository.findAllByRequestIdIn(any())).thenReturn(new ArrayList<>(List.of(item)));
-
+        //when
         List<ItemRequestOutWithItemsDto> userRequests = itemRequestsService.getAllRequests(1L, 0, 10);
+        //then
         assertThat(userRequests.size(), equalTo(1));
         assertThat(userRequests.get(0).getItems().size(), equalTo(1));
     }
@@ -163,6 +170,7 @@ class ItemRequestsServiceImplTest {
 
     @Test
     void getRequestById_whenRequestNorFound_thenContentNotFountExceptionThrown() {
+        //given
         ItemRequest itemRequest = createRequest();
 
         Item item1 = createItem();
@@ -176,9 +184,9 @@ class ItemRequestsServiceImplTest {
         when(userRepository.findById(anyLong())).thenReturn(Optional.of(new User()));
         when(itemRequestRepository.findById(anyLong())).thenReturn(Optional.of(itemRequest));
         when(itemRepository.findAllByRequestId(anyLong())).thenReturn(List.of(item1, item2));
-
+        //when
         ItemRequestOutWithItemsDto itemRequestOutWithItemsDto = itemRequestsService.getRequestById(1L, 1L);
-
+        //then
         assertThat(itemRequestOutWithItemsDto.getItems().size(), equalTo(2));
 
     }

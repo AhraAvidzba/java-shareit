@@ -37,7 +37,7 @@ class ItemControllerTest {
     private MockMvc mvc;
 
     @MockBean
-    ItemService itemService;
+    private ItemService itemService;
 
     private ItemDto itemDto;
 
@@ -64,15 +64,15 @@ class ItemControllerTest {
     @Test
     void saveItem_whenItemIsNotValid_thenMethodArgumentNotValidExceptionThrown() {
         itemDto.setAvailable(null);
-
+        //when
         mvc.perform(post("/items")
                         .content(mapper.writeValueAsString(itemDto))
                         .characterEncoding(StandardCharsets.UTF_8)
                         .contentType(MediaType.APPLICATION_JSON)
                         .header("X-Sharer-User-Id", 1)
                         .accept(MediaType.APPLICATION_JSON))
+                //then
                 .andExpect(status().isBadRequest());
-
         verify(itemService, never()).saveItem(any(), any());
     }
 
@@ -81,18 +81,18 @@ class ItemControllerTest {
     void saveItem() {
         when(itemService.saveItem(any(), anyLong()))
                 .thenReturn(itemDto);
-
+        //when
         String savedItem = mvc.perform(post("/items")
                         .content(mapper.writeValueAsString(itemDto))
                         .characterEncoding(StandardCharsets.UTF_8)
                         .contentType(MediaType.APPLICATION_JSON)
                         .header("X-Sharer-User-Id", 1)
                         .accept(MediaType.APPLICATION_JSON))
+                //then
                 .andExpect(status().isOk())
                 .andReturn()
                 .getResponse()
                 .getContentAsString(StandardCharsets.UTF_8);
-
         assertThat(mapper.writeValueAsString(itemDto), equalTo(savedItem));
     }
 
@@ -101,18 +101,18 @@ class ItemControllerTest {
     void patchItem() {
         when(itemService.patchItem(any(), anyLong()))
                 .thenReturn(itemDto);
-
+        //when
         String savedItem = mvc.perform(patch("/items/{id}", itemDto.getId())
                         .content(mapper.writeValueAsString(itemDto))
                         .characterEncoding(StandardCharsets.UTF_8)
                         .header("X-Sharer-User-Id", 1)
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
+                //then
                 .andExpect(status().isOk())
                 .andReturn()
                 .getResponse()
                 .getContentAsString(StandardCharsets.UTF_8);
-
         assertThat(mapper.writeValueAsString(itemDto), equalTo(savedItem));
     }
 
@@ -125,11 +125,12 @@ class ItemControllerTest {
                         new BookingIdOutDto(),
                         new BookingIdOutDto(),
                         List.of(new CommentDto())));
-
+        //when
         mvc.perform(get("/items/{id}", itemDto.getId())
                         .characterEncoding(StandardCharsets.UTF_8)
                         .header("X-Sharer-User-Id", 1)
                         .accept(MediaType.APPLICATION_JSON))
+                //then
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id", is(itemDto.getId()), Long.class))
                 .andExpect(jsonPath("$.name", is(itemDto.getName())))
@@ -145,11 +146,12 @@ class ItemControllerTest {
                         new BookingIdOutDto(),
                         new BookingIdOutDto(),
                         List.of(new CommentDto()))));
-
+        //when
         mvc.perform(get("/items")
                         .characterEncoding(StandardCharsets.UTF_8)
                         .header("X-Sharer-User-Id", 1)
                         .accept(MediaType.APPLICATION_JSON))
+                //then
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].id", is(itemDto.getId()), Long.class))
                 .andExpect(jsonPath("$[0].name", is(itemDto.getName())))
@@ -161,12 +163,13 @@ class ItemControllerTest {
     void searchItems() {
         when(itemService.searchItems(anyString(), anyInt(), anyInt()))
                 .thenReturn(List.of(itemDto));
-
+        //when
         mvc.perform(get("/items/search?text={}:from={}:size={}", "ерт", "0", "10")
                         .characterEncoding(StandardCharsets.UTF_8)
                         .header("X-Sharer-User-Id", 1)
                         .param("text", "ерт", "from", "0", "size", "10")
                         .accept(MediaType.APPLICATION_JSON))
+                //then
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].id", is(itemDto.getId()), Long.class))
                 .andExpect(jsonPath("$[0].name", is(itemDto.getName())))
@@ -176,17 +179,17 @@ class ItemControllerTest {
     @SneakyThrows
     @Test
     void saveComment_whenCommentIsNotValid_thenMethodArgumentNotValidExceptionThrown() {
+        //given
         commentDto.setText("   ");
-
+        //when
         mvc.perform(post("/items/{itemId}/comment", 1L)
                         .content(mapper.writeValueAsString(commentDto))
                         .characterEncoding(StandardCharsets.UTF_8)
                         .contentType(MediaType.APPLICATION_JSON)
-
                         .header("X-Sharer-User-Id", 1)
                         .accept(MediaType.APPLICATION_JSON))
+                //then
                 .andExpect(status().isBadRequest());
-
         verify(itemService, never()).saveComment(any());
     }
 
@@ -195,19 +198,18 @@ class ItemControllerTest {
     void saveComment() {
         when(itemService.saveComment(any()))
                 .thenReturn(commentDto);
-
+        //when
         String savedComment = mvc.perform(post("/items/{itemId}/comment", 1L)
                         .content(mapper.writeValueAsString(commentDto))
                         .characterEncoding(StandardCharsets.UTF_8)
                         .contentType(MediaType.APPLICATION_JSON)
-
                         .header("X-Sharer-User-Id", 1)
                         .accept(MediaType.APPLICATION_JSON))
+                //then
                 .andExpect(status().isOk())
                 .andReturn()
                 .getResponse()
                 .getContentAsString(StandardCharsets.UTF_8);
-
         assertThat(mapper.writeValueAsString(commentDto), equalTo(savedComment));
     }
 }

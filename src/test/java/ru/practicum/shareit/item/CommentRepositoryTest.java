@@ -24,7 +24,7 @@ class CommentRepositoryTest {
     private final CommentRepository commentRepository;
 
 
-    List<Comment> savedComments;
+    private List<Comment> savedComments;
 
     @BeforeEach
     void fillDB() {
@@ -38,7 +38,9 @@ class CommentRepositoryTest {
 
     @Test
     void findByItemId() {
+        //when
         List<Comment> returnedComments = commentRepository.findByItemId(savedComments.get(0).getItem().getId());
+        //then
         assertThat(List.of(savedComments.get(0)), equalTo(returnedComments));
     }
 

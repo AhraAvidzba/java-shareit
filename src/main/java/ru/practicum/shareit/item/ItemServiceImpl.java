@@ -12,7 +12,6 @@ import ru.practicum.shareit.booking.dto.BookingMapper;
 import ru.practicum.shareit.exceptions.BookingBadRequestException;
 import ru.practicum.shareit.exceptions.ContentNotFountException;
 import ru.practicum.shareit.exceptions.EditingNotAllowedException;
-import ru.practicum.shareit.exceptions.IncorrectParameterException;
 import ru.practicum.shareit.item.dto.*;
 import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.user.UserRepository;
@@ -86,7 +85,6 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public List<ItemWithBookAndCommentsDto> getItemsOfUser(Long userId, int from, int size) {
-        checkPageable(from, size);
         userRepository.findById(userId)
                 .orElseThrow(() -> new ContentNotFountException("Пользователь не найден"));
         LocalDateTime targetDate = LocalDateTime.now();
@@ -112,7 +110,6 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public List<ItemDto> searchItems(String text, int from, int size) {
-        checkPageable(from, size);
         if (text.isEmpty()) {
             return Collections.emptyList();
         }
@@ -210,11 +207,5 @@ public class ItemServiceImpl implements ItemService {
     private List<CommentDto> getItemComments(Long itemId) {
         List<Comment> comments = commentRepository.findByItemId(itemId);
         return comments.stream().map(CommentMapper::mapToCommentDto).collect(Collectors.toList());
-    }
-
-    private void checkPageable(int from, int size) {
-        if (from < 0 || size <= 0) {
-            throw new IncorrectParameterException("Проверьте переданные параметры from и size на корректность");
-        }
     }
 }

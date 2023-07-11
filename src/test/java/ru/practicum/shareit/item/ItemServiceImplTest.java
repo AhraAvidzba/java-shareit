@@ -41,7 +41,7 @@ class ItemServiceImplTest {
     @InjectMocks
     private ItemServiceImpl itemService;
     @Captor
-    ArgumentCaptor<Item> itemArgumentCaptor;
+    private ArgumentCaptor<Item> itemArgumentCaptor;
 
     private ItemDto createItem() {
         ItemDto itemDto = new ItemDto();
@@ -64,6 +64,7 @@ class ItemServiceImplTest {
 
     @Test
     void saveItem_whenOwnerFound_thenReturnSavedItem() {
+        //given
         ItemDto itemDto = createItem();
         User owner = createUser();
         when(userRepository.findById(any())).thenReturn(Optional.of(owner));
@@ -74,6 +75,7 @@ class ItemServiceImplTest {
 
     @Test
     void saveItem_whenOwnerNotFound_thenContentNotFountExceptionThrown() {
+        //given
         ItemDto itemDto = createItem();
         when(userRepository.findById(any())).thenReturn(Optional.empty());
 
@@ -86,6 +88,7 @@ class ItemServiceImplTest {
 
     @Test
     void patchItem_whenItemIdIsNull_thenContentNotFountExceptionThrown() {
+        //given
         ItemDto itemDto = createItem();
         itemDto.setId(null);
         Assertions.assertThrows(
@@ -97,6 +100,7 @@ class ItemServiceImplTest {
 
     @Test
     void patchItem_whenItemNotFound_thenContentNotFountExceptionThrown() {
+        //given
         ItemDto itemDto = createItem();
         when(itemRepository.findById(any())).thenReturn(Optional.empty());
 
@@ -109,6 +113,7 @@ class ItemServiceImplTest {
 
     @Test
     void patchItem_whenUserNotOwner_thenEditingNotAllowedExceptionThrown() {
+        //given
         ItemDto itemDto = createItem();
         User user = createUser();
         Item item = ItemMapper.toItem(itemDto, user);
@@ -123,6 +128,7 @@ class ItemServiceImplTest {
 
     @Test
     void patchItem_whenItemNotValid_thenConstraintViolationExceptionThrown() {
+        //given
         User user = createUser();
         ItemDto oldItemDto = createItem();
         oldItemDto.setAvailable(null);
@@ -139,6 +145,7 @@ class ItemServiceImplTest {
 
     @Test
     void patchItem_whenEditingAllowed_thenReturnUpdatedItem() {
+        //given
         User user = createUser();
         ItemDto oldItemDto = createItem();
         Item oldItem = ItemMapper.toItem(oldItemDto, user);
@@ -162,6 +169,7 @@ class ItemServiceImplTest {
 
     @Test
     void getItemById_whenInvoked_thenReturnItemWithFilteredBookingsAndComments() {
+        //given
         ItemDto itemDto = createItem();
         User user = createUser();
         Item item = ItemMapper.toItem(itemDto, user);
@@ -182,6 +190,7 @@ class ItemServiceImplTest {
 
     @Test
     void getItemsOfUser_whenInvoked_thenReturnItemsListWithFilteredBookingsAndComments() {
+        //given
         ItemDto itemDto = createItem();
         User user = createUser();
         Item item1 = ItemMapper.toItem(itemDto, user);
@@ -225,12 +234,15 @@ class ItemServiceImplTest {
 
     @Test
     void searchItems_whenInvoked_thenReturnListOfItems() {
+        //when
         itemService.searchItems("hi", 0, 1);
+        //then
         verify(itemRepository, times(1)).findAllByNameOrDescription(anyString(), any());
     }
 
     @Test
     void saveComment_whenItemNotFound_thenContentNotFountExceptionThrown() {
+        //given
         ItemDto itemDto = createItem();
         User user = createUser();
         Item item = ItemMapper.toItem(itemDto, user);
@@ -244,6 +256,7 @@ class ItemServiceImplTest {
 
     @Test
     void saveComment_whenUserNotFound_thenContentNotFountExceptionThrown() {
+        //given
         ItemDto itemDto = createItem();
         User user = createUser();
         Item item = ItemMapper.toItem(itemDto, user);
@@ -258,6 +271,7 @@ class ItemServiceImplTest {
 
     @Test
     void saveComment_whenUserNotBookedItem_thenBookingBadRequestExceptionThrown() {
+        //given
         ItemDto itemDto = createItem();
         User user = createUser();
         Item item = ItemMapper.toItem(itemDto, user);
@@ -272,6 +286,7 @@ class ItemServiceImplTest {
 
     @Test
     void saveComment_whenUserTrulyBookedItem_thenReturnSavedComment() {
+        //given
         ItemDto itemDto = createItem();
         User user = createUser();
         Item item = ItemMapper.toItem(itemDto, user);
@@ -280,8 +295,9 @@ class ItemServiceImplTest {
         when(itemRepository.findById(anyLong())).thenReturn(Optional.of(item));
         when(userRepository.findById(anyLong())).thenReturn(Optional.of(user));
         when(bookingRepository.findByBookerIdAndEndIsBefore(anyLong(), any(), any())).thenReturn(List.of(booking));
-
+        //when
         itemService.saveComment(commentDto);
+        //then
         verify(commentRepository, times(1)).save(any());
     }
 

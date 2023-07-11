@@ -2,12 +2,14 @@ package ru.practicum.shareit.request;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.request.dto.ItemRequestInDto;
 import ru.practicum.shareit.request.dto.ItemRequestOutDto;
 import ru.practicum.shareit.request.dto.ItemRequestOutWithItemsDto;
 
 import javax.validation.Valid;
+import javax.validation.constraints.Min;
 import java.util.List;
 
 
@@ -15,6 +17,7 @@ import java.util.List;
 @RestController
 @RequestMapping(path = "/requests")
 @RequiredArgsConstructor
+@Validated
 public class ItemRequestController {
     private final ItemRequestsService itemRequestsService;
 
@@ -35,8 +38,8 @@ public class ItemRequestController {
 
     @GetMapping("/all")
     public List<ItemRequestOutWithItemsDto> getAllRequests(@RequestHeader("X-Sharer-User-Id") Long userId,
-                                                           @RequestParam(name = "from", defaultValue = "0") int from,
-                                                           @RequestParam(name = "size", defaultValue = "10") int size) {
+                                                           @RequestParam(name = "from", defaultValue = "0") @Min(0) int from,
+                                                           @RequestParam(name = "size", defaultValue = "10") @Min(0) int size) {
 //        log.info("Возвращен список всех пользователей");
         return itemRequestsService.getAllRequests(userId, from, size);
     }

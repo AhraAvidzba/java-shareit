@@ -18,15 +18,16 @@ class ItemRequestOutWithItemsDtoTest {
 
     @Test
     void testItemRequestOutWithItemsDto() throws Exception {
+        //given
         LocalDateTime createdTime = LocalDateTime.now();
         ItemRequestOutWithItemsDto itemRequestOutWithItemsDto = new ItemRequestOutWithItemsDto();
         itemRequestOutWithItemsDto.setDescription("нужна отвертка");
         itemRequestOutWithItemsDto.setCreated(createdTime);
         itemRequestOutWithItemsDto.setId(1L);
         itemRequestOutWithItemsDto.setItems(null);
-
+        //when
         JsonContent<ItemRequestOutWithItemsDto> result = json.write(itemRequestOutWithItemsDto);
-
+        //then
         assertThat(result).extractingJsonPathStringValue("$.description").isEqualTo("нужна отвертка");
         assertThat(result).extractingJsonPathNumberValue("$.id").isEqualTo(1);
         assertThat(result).extractingJsonPathValue("$.items").isEqualTo(null);

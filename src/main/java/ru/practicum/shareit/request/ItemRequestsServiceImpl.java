@@ -5,7 +5,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.exceptions.ContentNotFountException;
-import ru.practicum.shareit.exceptions.IncorrectParameterException;
 import ru.practicum.shareit.item.Item;
 import ru.practicum.shareit.item.ItemRepository;
 import ru.practicum.shareit.item.dto.ItemDto;
@@ -48,9 +47,6 @@ public class ItemRequestsServiceImpl implements ItemRequestsService {
 
     @Override
     public List<ItemRequestOutWithItemsDto> getAllRequests(Long userId, int from, int size) {
-        if (from < 0 || size <= 0) {
-            throw new IncorrectParameterException("Проверьте переданные параметры from и size на корректность");
-        }
         checkAndReturnUser(userId);
         List<ItemRequest> requests = itemRequestRepository.findByRequesterIdNot(userId,
                 PageRequest.of(from, size, Sort.by("created").descending()));

@@ -16,13 +16,14 @@ class ItemDescriptionDtoTest {
 
     @Test
     void testItemDescriptionDto() throws Exception {
+        //given
         ItemDescriptionDto itemDescriptionDto = new ItemDescriptionDto();
         itemDescriptionDto.setId(1L);
         itemDescriptionDto.setName("отвертка");
         itemDescriptionDto.setOwnerId(1L);
-
+        //when
         JsonContent<ItemDescriptionDto> result = json.write(itemDescriptionDto);
-
+        //then
         assertThat(result).extractingJsonPathNumberValue("$.id").isEqualTo(1);
         assertThat(result).extractingJsonPathStringValue("$.name").isEqualTo("отвертка");
         assertThat(result).extractingJsonPathNumberValue("$.ownerId").isEqualTo(1);
