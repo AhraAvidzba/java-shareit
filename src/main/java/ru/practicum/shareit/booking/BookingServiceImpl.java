@@ -1,6 +1,8 @@
 package ru.practicum.shareit.booking;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.booking.dto.BookingInDto;
@@ -73,29 +75,36 @@ public class BookingServiceImpl implements BookingService {
         }
         throw new ContentNotFountException("Просматривать бронирование может только его автор, " +
                 "либо владелец вещи, к которой относится это бронирование");
-
     }
 
     @Override
-    public List<BookingOutDto> findAllBookingsByState(Long userId, State state) {
+    public List<BookingOutDto> findAllBookingsByState(Long userId, State state, int from, int size) {
+        //Просмотр пользователем всех его букингов (то что он забронировал у других пользователей)
         //Проверка существования пользователя
         getUser(userId);
         List<Booking> bookings;
+        Pageable pageSortedByStartTime = makePageSortedByStartTime(from, size);
         switch (state) {
             case ALL:
-                bookings = bookingRepository.findByBookerId(userId, Sort.by("start").descending());
+                //тут в тестах постман запрашивается порядковый номер элемента а не страницы потому page = from / size
+                bookings = bookingRepository.findByBookerId(userId,
+                        makePageSortedByStartTime(from / size, size));
                 break;
             case CURRENT:
-                bookings = bookingRepository.findByCurrentBooker(userId, LocalDateTime.now(), Sort.by("id").ascending());
+                bookings = bookingRepository.findByCurrentBooker(userId, LocalDateTime.now(),
+                        PageRequest.of(from, size, Sort.by("id").ascending()));
                 break;
             case PAST:
-                bookings = bookingRepository.findByBookerIdAndEndIsBefore(userId, LocalDateTime.now(), Sort.by("start").descending());
+                bookings = bookingRepository.findByBookerIdAndEndIsBefore(userId, LocalDateTime.now(),
+                        pageSortedByStartTime);
                 break;
             case FUTURE:
-                bookings = bookingRepository.findByBookerIdAndStartIsAfter(userId, LocalDateTime.now(), Sort.by("start").descending());
+                bookings = bookingRepository.findByBookerIdAndStartIsAfter(userId, LocalDateTime.now(),
+                        pageSortedByStartTime);
                 break;
             default:
-                bookings = bookingRepository.findByBookerIdAndStatus(userId, Status.valueOf(state.toString()), Sort.by("start").descending());
+                bookings = bookingRepository.findByBookerIdAndStatus(userId, Status.valueOf(state.toString()),
+                        pageSortedByStartTime);
         }
         return bookings.stream()
                 .map(BookingMapper::mapToBookingOutDto)
@@ -103,25 +112,32 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    public List<BookingOutDto> findAllOwnerBookingsByState(Long ownerId, State state) {
+    public List<BookingOutDto> findAllOwnerBookingsByState(Long ownerId, State state, int from, int size) {
+        //Просмотр владельцем вещей всех букингов этих вещей
         //Проверка существования пользователя
         getUser(ownerId);
         List<Booking> bookings;
+        Pageable pageSortedByStartTime = makePageSortedByStartTime(from, size);
         switch (state) {
             case ALL:
-                bookings = bookingRepository.findByItemOwnerId(ownerId, Sort.by("start").descending());
+                bookings = bookingRepository.findByItemOwnerId(ownerId,
+                        pageSortedByStartTime);
                 break;
             case CURRENT:
-                bookings = bookingRepository.findByOwnerCurrentBooker(ownerId, LocalDateTime.now(), Sort.by("id").ascending());
+                bookings = bookingRepository.findByOwnerCurrentBooker(ownerId, LocalDateTime.now(),
+                        PageRequest.of(from, size, Sort.by("id").ascending()));
                 break;
             case PAST:
-                bookings = bookingRepository.findByItemOwnerIdAndEndIsBefore(ownerId, LocalDateTime.now(), Sort.by("start").descending());
+                bookings = bookingRepository.findByItemOwnerIdAndEndIsBefore(ownerId, LocalDateTime.now(),
+                        pageSortedByStartTime);
                 break;
             case FUTURE:
-                bookings = bookingRepository.findByItemOwnerIdAndStartIsAfter(ownerId, LocalDateTime.now(), Sort.by("start").descending());
+                bookings = bookingRepository.findByItemOwnerIdAndStartIsAfter(ownerId, LocalDateTime.now(),
+                        pageSortedByStartTime);
                 break;
             default:
-                bookings = bookingRepository.findByItemOwnerIdAndStatus(ownerId, Status.valueOf(state.toString()), Sort.by("start").descending());
+                bookings = bookingRepository.findByItemOwnerIdAndStatus(ownerId, Status.valueOf(state.toString()),
+                        pageSortedByStartTime);
         }
         return bookings.stream()
                 .map(BookingMapper::mapToBookingOutDto)
@@ -148,5 +164,9 @@ public class BookingServiceImpl implements BookingService {
     private Booking getBooking(Long bookingId) {
         return bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new ContentNotFountException("Бранирования с id = " + bookingId + " не существует"));
+    }
+
+    private PageRequest makePageSortedByStartTime(int from, int size) {
+        return PageRequest.of(from, size, Sort.by("start").descending());
     }
 }

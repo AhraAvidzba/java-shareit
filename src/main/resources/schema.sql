@@ -1,6 +1,6 @@
 DROP TABLE IF EXISTS bookings CASCADE;
 DROP TABLE IF EXISTS items CASCADE;
-DROP TABLE IF EXISTS item_requests CASCADE;
+DROP TABLE IF EXISTS requests CASCADE;
 DROP TABLE IF EXISTS comments CASCADE;
 DROP TABLE IF EXISTS users CASCADE;
 
@@ -9,7 +9,7 @@ id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
 name varchar(50),
 email varchar(50) UNIQUE );
 
-CREATE TABLE IF NOT EXISTS item_requests (
+CREATE TABLE IF NOT EXISTS requests (
 id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
 description varchar(1000),
 creation_date timestamp,
@@ -24,7 +24,7 @@ available boolean,
 user_id BIGINT,
 request_id BIGINT,
 CONSTRAINT fk_items_to_users FOREIGN KEY(user_id) REFERENCES users(id),
-CONSTRAINT fk_items_to_request FOREIGN KEY(request_id) REFERENCES item_requests(id) );
+CONSTRAINT fk_items_to_request FOREIGN KEY(request_id) REFERENCES requests(id) );
 
 CREATE TABLE IF NOT EXISTS bookings (
 id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,

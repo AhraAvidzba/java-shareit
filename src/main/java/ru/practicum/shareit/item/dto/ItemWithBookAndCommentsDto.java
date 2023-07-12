@@ -2,6 +2,7 @@ package ru.practicum.shareit.item.dto;
 
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 import ru.practicum.shareit.booking.dto.BookingIdOutDto;
 
 import javax.validation.constraints.Future;
@@ -12,6 +13,7 @@ import java.util.List;
 
 @Getter
 @Setter
+@ToString
 public class ItemWithBookAndCommentsDto {
     private Long id;
     @NotBlank
@@ -21,7 +23,7 @@ public class ItemWithBookAndCommentsDto {
     @NotNull
     private Boolean available;
     private Long owner;
-    private Long request;
+    private Long requestId;
     @Past
     private BookingIdOutDto lastBooking;
     @Future

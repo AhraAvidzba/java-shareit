@@ -1,6 +1,7 @@
 package ru.practicum.shareit.item;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.booking.Booking;
@@ -15,9 +16,7 @@ import ru.practicum.shareit.item.dto.*;
 import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.user.UserRepository;
 
-import javax.validation.Validation;
-import javax.validation.Validator;
-import javax.validation.ValidatorFactory;
+import javax.validation.*;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -63,7 +62,10 @@ public class ItemServiceImpl implements ItemService {
         //Валидация Item
         ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
         Validator validator = factory.getValidator();
-        validator.validate(item);
+        Set<ConstraintViolation<Item>> results = validator.validate(item);
+        if (!results.isEmpty()) {
+            throw new ConstraintViolationException(results);
+        }
         return ItemMapper.toItemDto(itemRepository.save(item));
     }
 
@@ -82,11 +84,12 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public List<ItemWithBookAndCommentsDto> getItemsOfUser(Long userId) {
+    public List<ItemWithBookAndCommentsDto> getItemsOfUser(Long userId, int from, int size) {
         userRepository.findById(userId)
                 .orElseThrow(() -> new ContentNotFountException("Пользователь не найден"));
         LocalDateTime targetDate = LocalDateTime.now();
-        List<Item> items = itemRepository.findAllByOwnerId(userId, Sort.by("id").ascending());
+        List<Item> items = itemRepository.findAllByOwnerId(userId,
+                PageRequest.of(from, size, Sort.by("id").ascending()));
         HashMap<Long, BookingIdOutDto> itemLastBookings = getLastBookings(items.stream()
                 .map(Item::getId).collect(Collectors.toList()), userId, targetDate);
         HashMap<Long, BookingIdOutDto> itemNextBookings = getNextBookings(items.stream()
@@ -106,11 +109,12 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public List<ItemDto> searchItems(String text) {
+    public List<ItemDto> searchItems(String text, int from, int size) {
         if (text.isEmpty()) {
             return Collections.emptyList();
         }
-        return itemRepository.findAllByNameOrDescription(text).stream()
+        return itemRepository.findAllByNameOrDescription(text,
+                        PageRequest.of(from, size, Sort.by("id").ascending())).stream()
                 .map(ItemMapper::toItemDto)
                 .collect(Collectors.toList());
     }
@@ -122,7 +126,8 @@ public class ItemServiceImpl implements ItemService {
         User user = userRepository.findById(commentDto.getUserId())
                 .orElseThrow(() -> new ContentNotFountException("Пользователь не найден"));
         List<Booking> bookingsOfUser = bookingRepository.findByBookerIdAndEndIsBefore(commentDto.getUserId(),
-                commentDto.getCreated(), Sort.by("start").descending());
+                commentDto.getCreated(),
+                PageRequest.of(0, 1000, Sort.by("start").descending()));
         List<Booking> itemBookingsOfUser = bookingsOfUser.stream()
                 .filter(x -> Objects.equals(x.getItem().getId(), commentDto.getItemId()))
                 .collect(Collectors.toList());
