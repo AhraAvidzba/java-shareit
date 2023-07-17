@@ -33,13 +33,14 @@ public class BookingController {
     public ResponseEntity<Object> setStatus(@RequestHeader("X-Sharer-User-Id") Long userId,
                                             @PathVariable(name = "bookingId") Long bookingId,
                                             @RequestParam(name = "approved") Boolean isApproved) {
+        log.info("Updating booking {}, userId={}, status={}", bookingId, userId, isApproved);
         return bookingClient.setStatus(userId, bookingId, isApproved);
     }
 
     @GetMapping("/{bookingId}")
     public ResponseEntity<Object> getBooking(@RequestHeader("X-Sharer-User-Id") long userId,
                                              @PathVariable Long bookingId) {
-        log.info("Get booking {}, userId={}", bookingId, userId);
+        log.info("Getting booking {}, userId={}", bookingId, userId);
         return bookingClient.getBooking(userId, bookingId);
     }
 
@@ -50,7 +51,7 @@ public class BookingController {
                                                          @Positive @RequestParam(name = "size", defaultValue = "10") Integer size) {
         State state = State.from(stateParam)
                 .orElseThrow(() -> new UnknownStateException(stateParam));
-        log.info("Get booking with state {}, userId={}, from={}, size={}", stateParam, userId, from, size);
+        log.info("Getting booking with state {}, userId={}, from={}, size={}", stateParam, userId, from, size);
         return bookingClient.findAllBookingsByState(userId, state, from, size);
     }
 
@@ -62,13 +63,14 @@ public class BookingController {
         State state = State.from(stateParam)
                 .orElseThrow(() -> new UnknownStateException(stateParam));
 
-        log.info("Get booking with state {}, userId={}, from={}, size={}", stateParam, userId, from, size);
+        log.info("Getting booking with state {}, userId={}, from={}, size={}", stateParam, userId, from, size);
         return bookingClient.findAllOwnerBookingsByState(userId, state, from, size);
     }
 
     @GetMapping("/item/{itemId}")
     public ResponseEntity<Object> findAllBookingsOfItem(@RequestHeader("X-Sharer-User-Id") long userId,
                                                         @PathVariable(name = "itemId") Long itemId) {
+        log.info("Finding bookings od itemId {}, userId={}", itemId, userId);
         return bookingClient.findAllBookingsOfItem(itemId, userId);
     }
 }

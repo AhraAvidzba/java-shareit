@@ -19,20 +19,20 @@ public class UserController {
 
     @GetMapping
     public ResponseEntity<Object> getAllUsers() {
-        log.info("Возвращен список всех пользователей");
+        log.info("Getting all users");
         return userClient.getAllUsers();
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<Object> getUserById(@PathVariable Long id) {
-        log.info("Возвращен пользователь с id = {}", id);
-        return userClient.getUserById(id);
+    @GetMapping("/{userId}")
+    public ResponseEntity<Object> getUserById(@PathVariable Long userId) {
+        log.info("Getting userId={}", userId);
+        return userClient.getUserById(userId);
     }
 
     @PostMapping
     public ResponseEntity<Object> saveUser(@Validated(Create.class) @RequestBody UserDto userDto) {
         ResponseEntity<Object> savedUserDto = userClient.saveUser(userDto);
-        log.info("Пользователь сохранен");
+        log.info("Creating user {}", userDto);
         return savedUserDto;
     }
 
@@ -41,13 +41,13 @@ public class UserController {
                                              @PathVariable Long userId) {
         userDto.setId(userId);
         ResponseEntity<Object> savedUserDto = userClient.updateUser(userId, userDto);
-        log.info("Обновлены поля у пользователя с id {}", userId);
+        log.info("Updating user {}, userId={}", userDto, userId);
         return savedUserDto;
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Object> deleteUser(@PathVariable Long id) {
-        log.info("Пользователь удален, id = {}", id);
-        return userClient.deleteUser(id);
+    @DeleteMapping("/{userId}")
+    public ResponseEntity<Object> deleteUser(@PathVariable Long userId) {
+        log.info("Deleting userId={}", userId);
+        return userClient.deleteUser(userId);
     }
 }

@@ -24,7 +24,7 @@ public class ItemController {
     @PostMapping
     public ResponseEntity<Object> saveItem(@Valid @RequestBody ItemDto itemDto,
                                            @RequestHeader("X-Sharer-User-Id") Long userId) {
-        log.info("Сохранена вещь");
+        log.info("Creating item {}, userId={}", itemDto, userId);
         return itemClient.saveItem(itemDto, userId);
     }
 
@@ -33,14 +33,14 @@ public class ItemController {
                                             @PathVariable Long itemId,
                                             @RequestHeader("X-Sharer-User-Id") Long userId) {
         itemDto.setId(itemId);
-        log.info("Обновлены поля у вещи с id {}", itemId);
+        log.info("Updating item {}, itemId={}, userId={}", itemDto, itemId, userId);
         return itemClient.patchItem(itemDto, itemId, userId);
     }
 
     @GetMapping("/{itemId}")
     public ResponseEntity<Object> getItemById(@PathVariable Long itemId,
                                               @RequestHeader("X-Sharer-User-Id") Long userId) {
-        log.info("Возвращена вещь с id = {}", itemId);
+        log.info("Getting item {}, userId={}", itemId, userId);
         return itemClient.getItemById(itemId, userId);
     }
 
@@ -48,7 +48,7 @@ public class ItemController {
     public ResponseEntity<Object> getItemsOfUser(@RequestHeader("X-Sharer-User-Id") Long userId,
                                                  @PositiveOrZero @RequestParam(name = "from", defaultValue = "0") int from,
                                                  @Positive @RequestParam(name = "size", defaultValue = "10") int size) {
-        log.info("Возвращен список вещей пользователя с id = {}", userId);
+        log.info("Getting items of userId {}, from=={}, size={}", userId, from, size);
         return itemClient.getItemsOfUser(userId, from, size);
     }
 
@@ -57,7 +57,7 @@ public class ItemController {
                                               @RequestParam(name = "text") String text,
                                               @PositiveOrZero @RequestParam(name = "from", defaultValue = "0") int from,
                                               @Positive @RequestParam(name = "size", defaultValue = "10") int size) {
-        log.info("Возвращен список всех вещей содеражащих в названии либо описании текст: {} ", text);
+        log.info("Searching items containing {}, from={}, size={} by userId={}", text, from, size, userId);
         return itemClient.searchItems(userId, from, size, text);
     }
 
@@ -65,7 +65,7 @@ public class ItemController {
     public ResponseEntity<Object> saveComment(@Valid @RequestBody CommentDto commentDto,
                                               @RequestHeader("X-Sharer-User-Id") Long userId,
                                               @PathVariable(name = "itemId") Long itemId) {
-        log.info("Сохранен комментарий для вещи с id = {}", itemId);
+        log.info("Creating comment {}, userId={}", commentDto, userId);
         return itemClient.saveComment(commentDto, userId, itemId);
     }
 }

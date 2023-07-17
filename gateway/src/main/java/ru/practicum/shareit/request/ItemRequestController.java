@@ -23,13 +23,13 @@ public class ItemRequestController {
     @PostMapping
     public ResponseEntity<Object> addRequest(@RequestHeader("X-Sharer-User-Id") Long userId,
                                              @Valid @RequestBody ItemRequestInDto itemRequestInDto) {
-        log.info("Добавлен запрос");
+        log.info("Creating request( {}, userId={}", itemRequestInDto, userId);
         return itemRequestClient.addRequest(itemRequestInDto, userId);
     }
 
     @GetMapping
     public ResponseEntity<Object> getAllUserRequests(@RequestHeader("X-Sharer-User-Id") Long userId) {
-        log.info("Возвращен список всех запросов пользователя");
+        log.info("Getting requests of userId={}", userId);
         return itemRequestClient.getAllUserRequests(userId);
     }
 
@@ -37,14 +37,14 @@ public class ItemRequestController {
     public ResponseEntity<Object> getAllRequests(@RequestHeader("X-Sharer-User-Id") Long userId,
                                                  @PositiveOrZero @RequestParam(name = "from", defaultValue = "0") int from,
                                                  @Positive @RequestParam(name = "size", defaultValue = "10") int size) {
-        log.info("Возвращен список запросов других пользователей");
+        log.info("Getting all requests, userId={}", userId);
         return itemRequestClient.getAllRequests(userId, from, size);
     }
 
     @GetMapping("/{requestId}")
     public ResponseEntity<Object> getRequestById(@RequestHeader("X-Sharer-User-Id") Long userId,
                                                  @PathVariable(name = "requestId") Long requestId) {
-        log.info("Возвращен запрос с id = {}", requestId);
+        log.info("Getting requestId={}, userId={}", requestId, userId);
         return itemRequestClient.getRequestById(userId, requestId);
     }
 
