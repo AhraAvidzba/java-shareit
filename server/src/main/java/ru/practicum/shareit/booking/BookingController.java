@@ -66,7 +66,6 @@ public class BookingController {
         return bookingService.findAllOwnerBookingsByState(userId, state, from, size);
     }
 
-
     @GetMapping("/item/{itemId}")
     public List<BookingOutDto> findAllBookingsOfItem(@PathVariable(name = "itemId") Long itemId) {
         return bookingService.findAllBookingsOfItem(itemId);

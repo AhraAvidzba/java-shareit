@@ -9,7 +9,8 @@ import ru.practicum.shareit.request.dto.ItemRequestOutDto;
 import ru.practicum.shareit.request.dto.ItemRequestOutWithItemsDto;
 
 import javax.validation.Valid;
-import javax.validation.constraints.Min;
+import javax.validation.constraints.Positive;
+import javax.validation.constraints.PositiveOrZero;
 import java.util.List;
 
 
@@ -32,22 +33,22 @@ public class ItemRequestController {
 
     @GetMapping
     public List<ItemRequestOutWithItemsDto> getAllUserRequests(@RequestHeader("X-Sharer-User-Id") Long userId) {
-//        log.info("Возвращен список всех пользователей");
+        log.info("Возвращен список всех запросов пользователя");
         return itemRequestsService.getAllUserRequests(userId);
     }
 
     @GetMapping("/all")
     public List<ItemRequestOutWithItemsDto> getAllRequests(@RequestHeader("X-Sharer-User-Id") Long userId,
-                                                           @RequestParam(name = "from", defaultValue = "0") @Min(0) int from,
-                                                           @RequestParam(name = "size", defaultValue = "10") @Min(0) int size) {
-//        log.info("Возвращен список всех пользователей");
+                                                           @PositiveOrZero @RequestParam(name = "from", defaultValue = "0") int from,
+                                                           @Positive @RequestParam(name = "size", defaultValue = "10") int size) {
+        log.info("Возвращен список запросов других пользователей");
         return itemRequestsService.getAllRequests(userId, from, size);
     }
 
     @GetMapping("/{requestId}")
     public ItemRequestOutWithItemsDto getRequestById(@RequestHeader("X-Sharer-User-Id") Long userId,
                                                      @PathVariable(name = "requestId") Long requestId) {
-//        log.info("Возвращен список всех пользователей");
+        log.info("Возвращен запрос с id = {}", requestId);
         return itemRequestsService.getRequestById(userId, requestId);
     }
 

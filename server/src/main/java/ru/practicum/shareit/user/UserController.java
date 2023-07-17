@@ -44,7 +44,7 @@ public class UserController {
         userDto.setId(userId);
         UserDto savedUserDto = userService.updateUser(userDto);
         log.info("Обновлены поля у пользователя с id {}", savedUserDto.getId());
-        return userService.updateUser(savedUserDto);
+        return savedUserDto;
     }
 
     @DeleteMapping("/{id}")

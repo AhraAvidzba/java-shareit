@@ -19,4 +19,21 @@ public class ExceptionApiHandler {
         return Map.of("error", "Unknown state: " + exception.getMessage());
     }
 
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public Map<String, String> handleException(MethodArgumentNotValidException exception) {
+        Map<String, String> messages = new HashMap<>();
+        exception.getBindingResult().getAllErrors().forEach(e -> {
+            String field = ((FieldError) e).getField();
+            String message = e.getDefaultMessage();
+            messages.put(field, message);
+        });
+        return messages;
+    }
+
+    @ExceptionHandler(ConstraintViolationException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public Map<String, String> handleException(ConstraintViolationException exception) {
+        return Map.of("error", exception.getMessage());
+    }
 }
