@@ -2,15 +2,11 @@ package ru.practicum.shareit.request;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.request.dto.ItemRequestInDto;
 import ru.practicum.shareit.request.dto.ItemRequestOutDto;
 import ru.practicum.shareit.request.dto.ItemRequestOutWithItemsDto;
 
-import javax.validation.Valid;
-import javax.validation.constraints.Positive;
-import javax.validation.constraints.PositiveOrZero;
 import java.util.List;
 
 
@@ -18,13 +14,12 @@ import java.util.List;
 @RestController
 @RequestMapping(path = "/requests")
 @RequiredArgsConstructor
-@Validated
 public class ItemRequestController {
     private final ItemRequestsService itemRequestsService;
 
     @PostMapping
     public ItemRequestOutDto addRequest(@RequestHeader("X-Sharer-User-Id") Long userId,
-                                        @Valid @RequestBody ItemRequestInDto itemRequestInDto) {
+                                        @RequestBody ItemRequestInDto itemRequestInDto) {
         itemRequestInDto.setUserId(userId);
         ItemRequestOutDto savedItemRequestOutDto = itemRequestsService.addRequest(itemRequestInDto);
         log.info("Добавлен запрос, id = {}", savedItemRequestOutDto.getId());
@@ -39,8 +34,8 @@ public class ItemRequestController {
 
     @GetMapping("/all")
     public List<ItemRequestOutWithItemsDto> getAllRequests(@RequestHeader("X-Sharer-User-Id") Long userId,
-                                                           @PositiveOrZero @RequestParam(name = "from", defaultValue = "0") int from,
-                                                           @Positive @RequestParam(name = "size", defaultValue = "10") int size) {
+                                                           @RequestParam(name = "from", defaultValue = "0") int from,
+                                                           @RequestParam(name = "size", defaultValue = "10") int size) {
         log.info("Возвращен список запросов других пользователей");
         return itemRequestsService.getAllRequests(userId, from, size);
     }
