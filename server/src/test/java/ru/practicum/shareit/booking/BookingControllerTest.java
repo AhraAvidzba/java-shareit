@@ -61,24 +61,6 @@ class BookingControllerTest {
 
     @SneakyThrows
     @Test
-    void saveBooking_whenBookingIsNotValid_thenMethodArgumentNotValidExceptionThrown() {
-        //given
-        bookingInDto.setStart(null);
-        //when
-        mvc.perform(post("/bookings")
-                        .content(mapper.writeValueAsString(bookingInDto))
-                        .characterEncoding(StandardCharsets.UTF_8)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .header("X-Sharer-User-Id", 1)
-                        .accept(MediaType.APPLICATION_JSON))
-                //then
-                .andExpect(status().isBadRequest());
-        verify(bookingService, never()).saveBooking(any());
-
-    }
-
-    @SneakyThrows
-    @Test
     void saveBooking() {
         when(bookingService.saveBooking(any()))
                 .thenReturn(bookingOutDto);

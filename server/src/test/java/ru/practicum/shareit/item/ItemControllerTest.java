@@ -23,7 +23,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -58,22 +58,6 @@ class ItemControllerTest {
         commentDto.setText("отлично!");
         commentDto.setId(1L);
         commentDto.setCreated(LocalDateTime.now());
-    }
-
-    @SneakyThrows
-    @Test
-    void saveItem_whenItemIsNotValid_thenMethodArgumentNotValidExceptionThrown() {
-        itemDto.setAvailable(null);
-        //when
-        mvc.perform(post("/items")
-                        .content(mapper.writeValueAsString(itemDto))
-                        .characterEncoding(StandardCharsets.UTF_8)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .header("X-Sharer-User-Id", 1)
-                        .accept(MediaType.APPLICATION_JSON))
-                //then
-                .andExpect(status().isBadRequest());
-        verify(itemService, never()).saveItem(any(), any());
     }
 
     @SneakyThrows
@@ -174,23 +158,6 @@ class ItemControllerTest {
                 .andExpect(jsonPath("$[0].id", is(itemDto.getId()), Long.class))
                 .andExpect(jsonPath("$[0].name", is(itemDto.getName())))
                 .andExpect(jsonPath("$[0].description", is(itemDto.getDescription())));
-    }
-
-    @SneakyThrows
-    @Test
-    void saveComment_whenCommentIsNotValid_thenMethodArgumentNotValidExceptionThrown() {
-        //given
-        commentDto.setText("   ");
-        //when
-        mvc.perform(post("/items/{itemId}/comment", 1L)
-                        .content(mapper.writeValueAsString(commentDto))
-                        .characterEncoding(StandardCharsets.UTF_8)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .header("X-Sharer-User-Id", 1)
-                        .accept(MediaType.APPLICATION_JSON))
-                //then
-                .andExpect(status().isBadRequest());
-        verify(itemService, never()).saveComment(any());
     }
 
     @SneakyThrows

@@ -25,7 +25,7 @@ import java.util.List;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -77,23 +77,6 @@ class ItemRequestControllerTest {
         item.setDescription("мощная");
         item.setOwner(user);
         return ItemMapper.toItemDto(item);
-    }
-
-    @SneakyThrows
-    @Test
-    void addRequest_whenКуйгуыеIsNotValid_thenMethodArgumentNotValidExceptionThrown() {
-        //given
-        itemRequestInDto.setDescription(null);
-        //when
-        mvc.perform(post("/requests")
-                        .content(mapper.writeValueAsString(itemRequestInDto))
-                        .characterEncoding(StandardCharsets.UTF_8)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .header("X-Sharer-User-Id", 1)
-                        .accept(MediaType.APPLICATION_JSON))
-                //then
-                .andExpect(status().isBadRequest());
-        verify(itemRequestsService, never()).addRequest(any());
     }
 
     @SneakyThrows

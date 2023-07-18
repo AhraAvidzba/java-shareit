@@ -98,22 +98,6 @@ class UserControllerTest {
 
     @SneakyThrows
     @Test
-    void saveUser_whenUserIsNotValid_thenMethodArgumentNotValidExceptionThrown() {
-        //given
-        userDto.setEmail("notValidEmail");
-        //when
-        mvc.perform(post("/users")
-                        .content(mapper.writeValueAsString(userDto))
-                        .characterEncoding(StandardCharsets.UTF_8)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON))
-                //then
-                .andExpect(status().isBadRequest());
-        verify(userService, never()).saveUser(any());
-    }
-
-    @SneakyThrows
-    @Test
     void updateUser() {
         when(userService.updateUser(any()))
                 .thenReturn(userDto);
