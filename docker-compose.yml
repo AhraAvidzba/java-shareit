@@ -1,7 +1,7 @@
 version: '3.8'
 services:
   gateway:
-#    build: /Users/aad/dev/module_4/work_project/java-shareit/gateway
+#    build: /Users/aad/dev/module_4/work_project/java-shareit/gatewayy
     build: ./gateway
     image: shareit-gateway-image
     container_name: shareit-gateway-container
