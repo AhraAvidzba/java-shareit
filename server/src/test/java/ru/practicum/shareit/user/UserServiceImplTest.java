@@ -10,7 +10,6 @@ import ru.practicum.shareit.exceptions.ContentNotFountException;
 import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.dto.UserMapper;
 
-import javax.validation.ConstraintViolationException;
 import java.util.List;
 import java.util.Optional;
 
@@ -124,22 +123,6 @@ public class UserServiceImplTest {
         User savedUser = userArgumentCaptor.getValue();
         assertThat(savedUser.getEmail(), equalTo(oldUserDto.getEmail()));
         assertThat(savedUser.getName(), equalTo(newUser.getName()));
-    }
-
-    @Test
-    public void updateUser_whenUserIsNotValid_thenConstraintViolationExceptionThrown() {
-        UserDto userDto = createUser();
-        userDto.setEmail("notValidEmail");
-        User user = UserMapper.toUser(userDto);
-
-        when(userRepository.findById(anyLong())).thenReturn(Optional.of(user));
-        when(userRepository.findUserByEmail(anyString())).thenReturn(Optional.empty());
-        //when
-        Assertions.assertThrows(
-                ConstraintViolationException.class,
-                () -> userService.updateUser(userDto));
-        //then
-        verify(userRepository, never()).save(any());
     }
 
     @Test

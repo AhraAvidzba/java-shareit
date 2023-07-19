@@ -15,7 +15,6 @@ import ru.practicum.shareit.item.dto.*;
 import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.user.UserRepository;
 
-import javax.validation.ConstraintViolationException;
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
@@ -122,23 +121,6 @@ class ItemServiceImplTest {
         Assertions.assertThrows(
                 EditingNotAllowedException.class,
                 () -> itemService.patchItem(itemDto, 2L));
-
-        verify(itemRepository, never()).save(any());
-    }
-
-    @Test
-    void patchItem_whenItemNotValid_thenConstraintViolationExceptionThrown() {
-        //given
-        User user = createUser();
-        ItemDto oldItemDto = createItem();
-        oldItemDto.setAvailable(null);
-        Item oldItem = ItemMapper.toItem(oldItemDto, user);
-
-        when(itemRepository.findById(anyLong())).thenReturn(Optional.of(oldItem));
-
-        Assertions.assertThrows(
-                ConstraintViolationException.class,
-                () -> itemService.patchItem(oldItemDto, 1L));
 
         verify(itemRepository, never()).save(any());
     }
